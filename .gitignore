@@ -83,6 +83,7 @@ nbactions*.xml
 *.iws
 *.iml
 .idea/
+out/
 
 # Eclipse projects
 .classpath
