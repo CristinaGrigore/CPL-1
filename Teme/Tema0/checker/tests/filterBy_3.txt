@@ -1,0 +1,13 @@
+Soda a a1 150
+Soda a ConstPrice 200
+Soda a a3 250
+Soda a a4 300
+Router b1 always 100
+Router b2 always 100
+Laptop cx never 100
+Coffee d1 always 100
+Coffee d2 always 100
+END
+print 1
+filterBy 1 SamePriceFilter
+print 1

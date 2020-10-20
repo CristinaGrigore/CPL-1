@@ -1,0 +1,12 @@
+Soda a 129 100
+Coffee b 238 200
+Router c 357 300
+Laptop d 975 400
+Soda e 565 500
+Coffee f 714 600
+Router g 833 700
+Laptop h 1451 800
+Soda e2 674 600
+END
+sortBy 1 PriceComparator ascendent
+print 1

@@ -1,0 +1,14 @@
+Soda a a 100
+Coffee b b 200
+Laptop c c 300
+Router d d 400
+Private a
+Corporal b
+Sergent c
+Officer d
+String abcd
+Int 10
+Bool true
+IO
+END
+print 1

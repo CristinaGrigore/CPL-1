@@ -1,0 +1,1 @@
+[ Private(a), Private(e), Private(i), Corporal(b), Corporal(f), Corporal(j), Sergent(c), Sergent(g), Sergent(k), Officer(d), Officer(h), Officer(l) ]

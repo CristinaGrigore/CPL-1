@@ -1,0 +1,19 @@
+Private P_A
+Private P_C
+Private P_D
+Private P_E
+Private P_B
+Corporal C_A
+Corporal C_B
+Corporal C_C
+Corporal C_D
+Sergent S_A
+Sergent S_B
+Officer O_A
+Officer O_B
+Officer O_C
+Officer O_D
+Officer O_E
+Officer O_F
+END
+print 1

@@ -1,0 +1,17 @@
+String a
+String b
+String c
+String aa
+String ab
+String ac
+String ca
+String cb
+String cc
+String ba
+String bb
+String bc
+String aab
+String bbc
+String ccc
+END
+print 1

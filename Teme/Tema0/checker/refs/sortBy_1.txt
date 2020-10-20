@@ -1,0 +1,1 @@
+[ Soda(a,129), Coffee(b,238), Router(c,357), Soda(e,565), Soda(e2,674), Coffee(f,714), Router(g,833), Laptop(d,975), Laptop(h,1451) ]

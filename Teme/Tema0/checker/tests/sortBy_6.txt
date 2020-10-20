@@ -1,0 +1,24 @@
+String ac
+String aba
+String abb
+String aca
+String ab
+String acc
+String acb
+String ba
+String abc
+String a
+String aab
+String b
+String c
+String aa
+String cb
+String cc
+String aaa
+String aac
+String bb
+String ca
+String bc
+END
+sortBy 1 AlphabeticComparator descendent
+print 1

@@ -1,0 +1,17 @@
+Soda A 100 100
+Soda D 400 400
+Soda C 300 300
+Soda B 200 200
+Soda E 500 500
+Coffee A 1100 1100
+Coffee B 1200 1200
+Coffee C 1300 1300
+Coffee D 1400 1400
+Coffee E 1500 1500
+Laptop K 111000 111000
+Laptop K 112000 112000
+Laptop K 113000 113000
+Router M 5000 5000
+Router M 6000 5000
+END
+print 1

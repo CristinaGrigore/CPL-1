@@ -1,0 +1,1 @@
+[ Soda(a,a), Coffee(b,b), Laptop(c,c), Router(d,d), Private(a), Corporal(b), Sergent(c), Officer(d), String(abcd), Int(10), Bool(true), IO() ]

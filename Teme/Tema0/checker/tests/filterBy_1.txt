@@ -1,0 +1,20 @@
+Soda a 1 100
+Private i
+Soda a 2 200
+Private j
+Soda a 3 300
+Private k
+Soda a 4 400
+Private l
+Coffee b 1 100
+Officer i
+Coffee b 2 200
+Officer j
+Coffee b 3 300
+Officer k
+Coffee b 4 400
+Officer l
+String whatever
+END
+filterBy 1 ProductFilter
+print 1

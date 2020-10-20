@@ -1,0 +1,15 @@
+Private a
+Corporal b
+Sergent c
+Officer d
+Private e
+Corporal f
+Sergent g
+Officer h
+Private i
+Corporal j
+Sergent k
+Officer l
+END
+sortBy 1 RankComparator descendent
+print 1

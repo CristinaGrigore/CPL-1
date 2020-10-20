@@ -1,0 +1,24 @@
+Private a
+Private b
+END
+load
+Corporal a
+Corporal b
+END
+load
+Sergent a
+Sergent b
+END
+load
+Officer a
+Officer b
+END
+load
+String abc
+String efg
+END
+print
+merge 2 3
+print
+merge 2 3
+print

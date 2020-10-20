@@ -1,0 +1,1 @@
+[ Soda(A,100), Soda(D,400), Soda(C,300), Soda(B,200), Soda(E,500), Coffee(A,1100), Coffee(B,1200), Coffee(C,1300), Coffee(D,1400), Coffee(E,1500), Laptop(K,111000), Laptop(K,112000), Laptop(K,113000), Router(M,5000), Router(M,6000) ]

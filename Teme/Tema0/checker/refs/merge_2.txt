@@ -1,0 +1,5 @@
+[ String(e1), String(e2) ]
+[ String(d1), String(d2), String(e1), String(e2) ]
+[ String(c1), String(c2), String(d1), String(d2), String(e1), String(e2) ]
+[ String(b1), String(b2), String(c1), String(c2), String(d1), String(d2), String(e1), String(e2) ]
+[ String(a1), String(a2), String(b1), String(b2), String(c1), String(c2), String(d1), String(d2), String(e1), String(e2) ]

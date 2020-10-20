@@ -1,0 +1,1 @@
+[ Soda(a,1), Soda(a,2), Soda(a,3), Soda(a,4), Coffee(b,1), Coffee(b,2), Coffee(b,3), Coffee(b,4) ]

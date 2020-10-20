@@ -1,0 +1,15 @@
+Soda a a 100
+Soda b b 200
+Soda c c 300
+END
+load
+Coffee a a 100
+Coffee b b 200
+Coffee c c 300
+END
+load
+Private a
+Private b
+Private c
+END
+print
