@@ -1,17 +1,16 @@
 class State {
 	state: String;
 
-	init(s: String): State {{
+	init(s: String): Object {{
 		state <- s;
 
 		if s = "action" then
 			self
 		else if s = "load" then
 			self
-		else {
-			abort();
-			self;
-		} fi fi;
+		else
+			abort()
+		fi fi;
 	}};
 
 	getState(): String { state };

@@ -31,9 +31,12 @@ class Main inherits IO {
 					if inputStr = const.endLoad() then {
 						state.init(const.stateAction());
 						lists.add(crtList);
+						crtList <- new List;
 					} else
-						-- TODO: verifica daca e Object
-						crtList.add(parser.parseString(inputStr))
+						case parser.parseString(inputStr) of
+							invalid: Invalid => self;
+							obj: Object => crtList.add(obj);
+						esac
 					fi
 				else
 					out_string("TODO\n")

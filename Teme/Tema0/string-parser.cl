@@ -1,3 +1,5 @@
+class Invalid { };
+
 class StringParser {
 	const: Constants <- new Constants;
 	atoi: A2I <- new A2I;
@@ -6,7 +8,11 @@ class StringParser {
 		let tokenizer: StringTokenizer <- new StringTokenizer.init(str),
 			token: String <- tokenizer.nextToken()
 		in
-			if token = new Int.type_name() then
+			if token = new IO.type_name() then
+				new IO
+			else if token = new Object.type_name() then
+				new Object
+			else if token = new Int.type_name() then
 				atoi.a2i(tokenizer.nextToken())
 			else if token = new Bool.type_name() then
 				let value: String <- tokenizer.nextToken() in
@@ -15,12 +21,12 @@ class StringParser {
 					else if value = const.valueFalse() then
 						false
 					else
-						new Object
+						new Invalid
 					fi fi
 			else if token = new String.type_name() then
 				let value: String <- tokenizer.nextToken() in
 					if value = const.emptyString() then
-						new Object
+						new Invalid
 					else
 						value
 					fi
@@ -30,24 +36,24 @@ class StringParser {
 					price: String <- tokenizer.nextToken()
 				in
 					if name = const.emptyString() then
-						new Object
+						new Invalid
 					else if model = const.emptyString() then
-						new Object
+						new Invalid
 					else if price = const.emptyString() then
-						new Object
+						new Invalid
 					else
 						makeProduct(token, name, model, atoi.a2i(price))
 					fi fi fi
 			else if isRank(token) then
 				let name: String <- tokenizer.nextToken() in
 					if name = const.emptyString() then
-						new Object
+						new Invalid
 					else
 						makeRank(token, name)
 					fi
 			else
-				new Object
-			fi fi fi fi fi
+				new Invalid
+			fi fi fi fi fi fi fi
 	};
 
 	isProduct(str: String): Bool {
@@ -74,7 +80,7 @@ class StringParser {
 		else if type = new Router.type_name() then
 			new Router.init(name, model, price)
 		else
-			new Object
+			new Invalid
 		fi fi fi fi
 	};
 
@@ -102,7 +108,7 @@ class StringParser {
 		else if type = new Officer.type_name() then
 			new Officer.init(name)
 		else
-			new Object
+			new Invalid
 		fi fi fi fi
 	};
 };

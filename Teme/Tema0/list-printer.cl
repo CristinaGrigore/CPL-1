@@ -1,5 +1,4 @@
 class ListPrinter inherits IO {
-	stringify: Stringify <- new Stringify;
 	const: Constants <- new Constants;
 	atoi: A2I <- new A2I;
 
@@ -13,7 +12,8 @@ class ListPrinter inherits IO {
 
 	print(pos: Int, lists: List): IO {
 		if not lists.isEmpty() then {
-			out_int(pos).out_string(": ".concat(formatList(lists.head())));
+			out_int(pos).out_string(": "
+				.concat(objectToList(lists.head()).toString()));
 			print(pos + 1, lists.tail());
 		} else
 			self
@@ -24,12 +24,13 @@ class ListPrinter inherits IO {
 		if crtPos < targetPos then
 			printNth(crtPos + 1, targetPos, lists.tail())
 		else
-			out_string(formatList(lists.head()))
+			out_string(objectToList(lists.head()).toString())
 		fi
 	};
 
-	-- TODO: schimba in List daca se poate
-	formatList(list: Object): String {
-		"[ ".concat(stringify.toString(list)).concat(" ]\n")
+	objectToList(obj: Object): List {
+		case obj of
+		list: List => list;
+		esac
 	};
 };

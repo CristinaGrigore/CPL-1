@@ -6,7 +6,7 @@ class Product {
 	model : String;
 	price : Int;
 
-	init(n : String, m: String, p : Int):SELF_TYPE {{
+	init(n : String, m: String, p : Int): SELF_TYPE {{
 		name <- n;
 		model <- m;
 		price <- p;
@@ -49,12 +49,12 @@ class Router inherits Product { };
 class Rank {
 	name : String;
 
-	init(n: String): String {
-		name <- n
-	};
+	init(n: String): SELF_TYPE {{
+		name <- n;
+		self;
+	}};
 
 	toString(): String {
-		-- Hint: what are the default methods of Object?
 		type_name().concat("(").concat(name).concat(")")
 	};
 };
