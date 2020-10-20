@@ -1,4 +1,4 @@
-class ListSorter inherits IO {
+class ListSorter {
 	const: Constants <- new Constants;
 	atoi: A2I <- new A2I;
 	caster: Caster <- new Caster;

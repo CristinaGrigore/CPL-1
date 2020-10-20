@@ -7,6 +7,7 @@ class Main inherits IO {
 	printer: ListPrinter <- new ListPrinter;
 	filterer: ListFilterer <- new ListFilterer;
 	sorter: ListSorter <- new ListSorter;
+	merger: ListMerger <- new ListMerger;
 
 	main(): Object {{
 		state.init(const.stateLoad());
@@ -21,20 +22,7 @@ class Main inherits IO {
 				token <- tokenizer.nextToken();
 
 				if state.getState() = const.stateAction() then
-					if token = const.actionPrint() then {
-						token <- tokenizer.nextToken();
-						printer.handlePrint(token, lists);
-					} else if token = const.stateLoad() then
-						state.init(token)
-					else if token = const.actionFilter() then
-						filterer.applyFilter(lists, tokenizer.nextToken(),
-							tokenizer.nextToken())
-					else if token = const.actionSort() then
-						sorter.sort(lists, tokenizer.nextToken(),
-							tokenizer.nextToken(), tokenizer.nextToken())
-					else
-						self
-					fi fi fi fi
+					handleAction(token)
 				else if state.getState() = const.stateLoad() then
 					if inputStr = const.endLoad() then {
 						state.init(const.stateAction());
@@ -47,8 +35,26 @@ class Main inherits IO {
 						esac
 					fi
 				else
-					out_string("TODO\n")
+					out_string("Unsupported command!\n")
 				fi fi;
 			} pool;
 	}};
+
+	handleAction(command: String): Object {
+		if command = const.actionPrint() then
+			printer.handlePrint(tokenizer.nextToken(), lists)
+		else if command = const.stateLoad() then
+			state.init(command)
+		else if command = const.actionFilter() then
+			filterer.applyFilter(lists, tokenizer.nextToken(),
+				tokenizer.nextToken())
+		else if command = const.actionSort() then
+			sorter.sort(lists, tokenizer.nextToken(), tokenizer.nextToken(),
+				tokenizer.nextToken())
+		else if command = const.actionMerge() then
+			merger.merge(lists, tokenizer.nextToken(), tokenizer.nextToken())
+		else
+			self
+		fi fi fi fi fi
+	};
 };

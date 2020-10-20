@@ -4,6 +4,7 @@ class Constants {
 	stateAction(): String { "action" };
 	actionFilter(): String { "filterBy" };
 	actionSort(): String { "sortBy" };
+	actionMerge(): String { "merge" };
 
 	endLoad(): String { "END" };
 

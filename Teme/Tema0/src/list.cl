@@ -1,4 +1,4 @@
-class List inherits IO {
+class List {
 	head: Object;
 	tail: List;
 
@@ -19,6 +19,30 @@ class List inherits IO {
 			init(o, new List)
 		else
 			tail.add(o)
+		fi
+	};
+
+	delete(index: Int): List {
+		if index = 1 then
+			tail
+		else
+			init(head, tail.delete(index - 1))
+		fi
+	};
+
+	get(index: Int): Object {
+		if index = 1 then
+			head
+		else
+			tail.get(index - 1)
+		fi
+	};
+
+	append(l: List): List {
+		if isEmpty() then
+			l
+		else
+			init(head, tail.append(l))
 		fi
 	};
 
@@ -53,10 +77,6 @@ class List inherits IO {
 	};
 
 	toString(): String { "[ ".concat(toStringInner()) };
-
-	merge(other: List): SELF_TYPE {
-		self (* TODO *)
-	};
 
 	filter(f: Filter): List {
 		if isEmpty() then
