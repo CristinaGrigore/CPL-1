@@ -1,9 +1,19 @@
 class Constants {
-	stateListen() { "listen" };
-	stateLoad() { "load" };
-	stateAction() { "action" };
+	stateListen(): String { "listen" };
+	stateLoad(): String { "load" };
+	stateAction(): String { "action" };
 
-	endLoad() { "END" };
+	endLoad(): String { "END" };
 
-	actionPrint() { "print" };
+	actionPrint(): String { "print" };
+
+	typeInt(): String { "Int" };
+	typeString(): String { "String" };
+	typeBool(): String { "Bool" };
+
+	valueTrue(): String { "true" };
+	valueFalse(): String { "false" };
+
+	space(): String { " " };
+	emptyString(): String { "" };
 };
