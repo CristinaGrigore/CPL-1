@@ -43,11 +43,13 @@ class List inherits IO {
 	};
 
 	toStringInner(): String {
-		if tail.isEmpty() then
+		if isEmpty() then
+			" ]\n"
+		else if tail.isEmpty() then
 			stringify().concat(" ]\n")
 		else
 			stringify().concat(", ").concat(tail.toStringInner())
-		fi
+		fi fi
 	};
 
 	toString(): String { "[ ".concat(toStringInner()) };
@@ -56,8 +58,14 @@ class List inherits IO {
 		self (* TODO *)
 	};
 
-	filterBy(): SELF_TYPE {
-		self (* TODO *)
+	filter(f: Filter): List {
+		if isEmpty() then
+			self
+		else if f.apply(head) then
+			new List.init(head, tail.filter(f))
+		else
+			tail.filter(f)
+		fi fi
 	};
 
 	sortBy(): SELF_TYPE {

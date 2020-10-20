@@ -5,7 +5,7 @@ import sys
 FORCE_RUN_ALL = True   #run all tests, despite failures?
 
 def launch(in_file):
-    bash_cmd = "cat ../*.cl > .combined.cl"
+    bash_cmd = "cat ../src/*.cl > .combined.cl"
     try:
         proc = subprocess.Popen(bash_cmd, shell=True)
         proc.wait()

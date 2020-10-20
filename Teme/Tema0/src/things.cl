@@ -13,7 +13,7 @@ class Product {
 		self;
 	}};
 
-	getprice(): Int { price * 119 / 100 };
+	getPrice(): Int { price * 119 / 100 };
 
 	toString(): String {
 		type_name().concat("(").concat(name).concat(",").concat(model)
@@ -23,22 +23,22 @@ class Product {
 
 class Edible inherits Product {
 	-- VAT tax is lower for foods
-	getprice(): Int { price * 109 / 100 };
+	getPrice(): Int { price * 109 / 100 };
 };
 
 class Soda inherits Edible {
 	-- sugar tax is 20 bani
-	getprice(): Int { price * 109 / 100 + 20 };
+	getPrice(): Int { price * 109 / 100 + 20 };
 };
 
 class Coffee inherits Edible {
 	-- this is technically poison for ants
-	getprice(): Int { price * 119 / 100 };
+	getPrice(): Int { price * 119 / 100 };
 };
 
 class Laptop inherits Product {
 	-- operating system cost included
-	getprice(): Int { price * 119 / 100 + 499 };
+	getPrice(): Int { price * 119 / 100 + 499 };
 };
 
 class Router inherits Product { };

@@ -2,6 +2,7 @@ class Constants {
 	stateListen(): String { "listen" };
 	stateLoad(): String { "load" };
 	stateAction(): String { "action" };
+	actionFilter(): String { "filterBy" };
 
 	endLoad(): String { "END" };
 

@@ -5,6 +5,7 @@ class Main inherits IO {
 	const: Constants <- new Constants;
 	tokenizer: StringTokenizer <- new StringTokenizer;
 	printer: ListPrinter <- new ListPrinter;
+	filterer: ListFilterer <- new ListFilterer;
 
 	main(): Object {{
 		state.init(const.stateLoad());
@@ -24,9 +25,14 @@ class Main inherits IO {
 						printer.handlePrint(token, lists);
 					} else if token = const.stateLoad() then
 						state.init(token)
+					else if token = const.actionFilter() then
+						let pos: String <- tokenizer.nextToken(),
+							filterType: String <- tokenizer.nextToken()
+						in
+							filterer.applyFilter(lists, filterType, pos)
 					else
 						self
-					fi fi
+					fi fi fi
 				else if state.getState() = const.stateLoad() then
 					if inputStr = const.endLoad() then {
 						state.init(const.stateAction());
