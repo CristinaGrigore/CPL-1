@@ -1,5 +1,5 @@
 #!/bin/bash
-SOURCES=$(ls *.cl)  # load ALL .cl files within this folder
+SOURCES=$(ls src/*.cl)  # load ALL .cl files within this folder
 INTERP="cool"     # path to interpreter executable
 
 TMP_SRC=".combined.cl"
