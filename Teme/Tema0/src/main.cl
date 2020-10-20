@@ -6,6 +6,7 @@ class Main inherits IO {
 	tokenizer: StringTokenizer <- new StringTokenizer;
 	printer: ListPrinter <- new ListPrinter;
 	filterer: ListFilterer <- new ListFilterer;
+	sorter: ListSorter <- new ListSorter;
 
 	main(): Object {{
 		state.init(const.stateLoad());
@@ -26,13 +27,14 @@ class Main inherits IO {
 					} else if token = const.stateLoad() then
 						state.init(token)
 					else if token = const.actionFilter() then
-						let pos: String <- tokenizer.nextToken(),
-							filterType: String <- tokenizer.nextToken()
-						in
-							filterer.applyFilter(lists, filterType, pos)
+						filterer.applyFilter(lists, tokenizer.nextToken(),
+							tokenizer.nextToken())
+					else if token = const.actionSort() then
+						sorter.sort(lists, tokenizer.nextToken(),
+							tokenizer.nextToken(), tokenizer.nextToken())
 					else
 						self
-					fi fi fi
+					fi fi fi fi
 				else if state.getState() = const.stateLoad() then
 					if inputStr = const.endLoad() then {
 						state.init(const.stateAction());

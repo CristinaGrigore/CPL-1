@@ -8,7 +8,7 @@ class List inherits IO {
 
 	tail(): List { tail };
 
-	init(o: Object, l: List): List {{
+	init(o: Object, l: List): SELF_TYPE {{
 		head <- o;
 		tail <- l;
 		self;
@@ -68,7 +68,23 @@ class List inherits IO {
 		fi fi
 	};
 
-	sortBy(): SELF_TYPE {
-		self (* TODO *)
+	sortBy(cmp: Comparator): List { sortByInner(new List, cmp) };
+
+	sortByInner(sortedL: List, cmp: Comparator): List {
+		if isEmpty() then
+			sortedL
+		else
+			tail.sortByInner(sortedL.insertInSortedList(head, cmp), cmp)
+		fi
+	};
+
+	insertInSortedList(obj: Object, cmp: Comparator): List {
+		if isEmpty() then
+			new List.init(obj, self)
+		else if cmp.compareTo(head, obj) then
+			new List.init(head, tail.insertInSortedList(obj, cmp))
+		else
+			new List.init(obj, self)
+		fi fi
 	};
 };

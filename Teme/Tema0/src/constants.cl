@@ -3,6 +3,7 @@ class Constants {
 	stateLoad(): String { "load" };
 	stateAction(): String { "action" };
 	actionFilter(): String { "filterBy" };
+	actionSort(): String { "sortBy" };
 
 	endLoad(): String { "END" };
 
@@ -17,4 +18,7 @@ class Constants {
 
 	space(): String { " " };
 	emptyString(): String { "" };
+
+	directionAscendent(): String { "ascendent" };
+	directionDescendent(): String { "descendent" };
 };
