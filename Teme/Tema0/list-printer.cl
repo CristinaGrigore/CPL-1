@@ -1,30 +1,26 @@
-class Action inherits IO {
+class ListPrinter inherits IO {
 	stringify: Stringify <- new Stringify;
 	const: Constants <- new Constants;
-	-- io: IO <- new IO;
+	atoi: A2I <- new A2I;
 
-	execute(action: String, lists: List): Object {
-		if action =  then
+	handlePrint(pos: String, lists: List): IO {
+		if pos = const.emptyString() then
 			print(1, lists)
-		else if action.substr(0, 5) = const.actionPrint() then
-			printNth(1, new A2I.a2i(action.substr(6, action.length() - 6)),
-				lists)
 		else
-			out_string("TODO\n")
-		fi fi
+			printNth(1, atoi.a2i(pos), lists)
+		fi
 	};
 
-	print(pos: Int, lists: List): Object {
+	print(pos: Int, lists: List): IO {
 		if not lists.isEmpty() then {
 			out_int(pos).out_string(": ".concat(formatList(lists.head())));
 			print(pos + 1, lists.tail());
-		} else {
-			self;
-			out_string("empty\n");
-		} fi
+		} else
+			self
+		fi
 	};
 
-	printNth(crtPos: Int, targetPos: Int, lists: List): Object {
+	printNth(crtPos: Int, targetPos: Int, lists: List): IO {
 		if crtPos < targetPos then
 			printNth(crtPos + 1, targetPos, lists.tail())
 		else

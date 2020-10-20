@@ -1,24 +1,24 @@
 class List {
-    hd: Object;
-	tl: List;
+    head: Object;
+	tail: List;
 
-    isEmpty(): Bool { isvoid(hd) };
+    isEmpty(): Bool { isvoid head };
 
-    init(h: Object, l: List): List {{
-		hd <- h;
-        tl <- l;
+    head(): Object { head };
+
+    tail(): List { tail };
+
+    init(o: Object, l: List): List {{
+		head <- o;
+        tail <- l;
 		self;
 	}};
-
-	head(): Object { hd };
-
-	tail(): List { tl };
 
     add(o: Object): List {
         if isEmpty() then
             init(o, new List)
         else
-            tl.add(o)
+            tail.add(o)
         fi
     };
 

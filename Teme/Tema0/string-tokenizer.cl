@@ -21,7 +21,7 @@ class StringTokenizer {
 					localPos <- len;
 				} else {
 					token <- token.concat(str.substr(pos, 1));
-					pos <- pos;
+					pos <- pos + 1;
 					localPos <- pos;
 				} fi;
 			} pool;
