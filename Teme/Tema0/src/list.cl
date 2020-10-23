@@ -46,6 +46,10 @@ class List {
 		fi
 	};
 
+	(**
+	 * Transofrma unul dintre tipurile de date ce pot fi stocate in lista in
+	 * string.
+	 *)
 	stringify(): String {
 		case head of
 		iHead: Int =>
@@ -90,6 +94,10 @@ class List {
 
 	sortBy(cmp: Comparator): List { sortByInner(new List, cmp) };
 
+	(**
+	 * Sorteaza lista curenta folosind Insertion Sort. Rezultatul este stocat in
+	 * `sortedL. Implementarea e similara cu laboratorul 3 de PP.
+	 *)
 	sortByInner(sortedL: List, cmp: Comparator): List {
 		if isEmpty() then
 			sortedL

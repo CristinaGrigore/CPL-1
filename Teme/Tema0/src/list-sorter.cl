@@ -1,6 +1,10 @@
-class ListSorter {
+(**
+ * Sorteaza o lista data prin indexul sau, crescator sau descrescator, folosind
+ * unul dintre comparatorii {PriceComparator, RankComparator,
+ * AlphabeticComparator}.
+ *)
+class ListSorter inherits A2I {
 	const: Constants <- new Constants;
-	atoi: A2I <- new A2I;
 	caster: Caster <- new Caster;
 
 	sort(lists: List, index: String, type: String, mode: String): Object {
@@ -15,12 +19,14 @@ class ListSorter {
 				self
 			fi fi fi;
 
-			sortInner(lists, atoi.a2i(index), cmp);
+			sortInner(lists, a2i(index), cmp);
 		}
 	};
 
 	sortInner(lists: List, index: Int, cmp: Comparator): Object {
 		if index = 1 then
+			-- Se reinitializeaza lista curenta cu ea insasi sortata si tailul
+			-- sau.
 			lists.init(caster.objectToList(lists.head()).sortBy(cmp),
 				lists.tail())
 		else

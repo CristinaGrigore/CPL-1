@@ -1,11 +1,16 @@
 class Invalid { };
 
-class StringParser {
+(**
+ * Parseaza un string primit ce contine un obiect care trebuie adaugat intr-o
+ * lista. Foloseste un StringTokenizer pentru a desparti stringul primit dupa
+ * caracterul " ".
+ *)
+class StringParser inherits A2I {
 	const: Constants <- new Constants;
-	atoi: A2I <- new A2I;
 
-	parseString(str: String): Object {
-		let tokenizer: StringTokenizer <- new StringTokenizer.init(str),
+	getListElement(str: String): Object {
+		let tokenizer: StringTokenizer <- new StringTokenizer
+				.init(str, const.space()),
 			token: String <- tokenizer.nextToken()
 		in
 			if token = new IO.type_name() then
@@ -13,7 +18,7 @@ class StringParser {
 			else if token = new Object.type_name() then
 				new Object
 			else if token = new Int.type_name() then
-				atoi.a2i(tokenizer.nextToken())
+				a2i(tokenizer.nextToken())
 			else if token = new Bool.type_name() then
 				let value: String <- tokenizer.nextToken() in
 					if value = const.valueTrue() then
@@ -42,7 +47,7 @@ class StringParser {
 					else if price = const.emptyString() then
 						new Invalid
 					else
-						makeProduct(token, name, model, atoi.a2i(price))
+						makeProduct(token, name, model, a2i(price))
 					fi fi fi
 			else if isRank(token) then
 				let name: String <- tokenizer.nextToken() in

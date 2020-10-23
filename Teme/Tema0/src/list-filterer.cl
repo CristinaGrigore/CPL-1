@@ -1,6 +1,9 @@
-class ListFilterer {
+(**
+ * Aplica unul dintre filtrele {ProductFilter, RankFilter, SamePriceFilter} pe
+ * una dintre liste, specificata prin indexul sau.
+ *)
+class ListFilterer inherits A2I {
 	caster: Caster <- new Caster;
-	atoi: A2I <- new A2I;
 
 	applyFilter(lists: List, index: String, type: String): Object {
 		let f: Filter in {
@@ -14,7 +17,7 @@ class ListFilterer {
 				self
 			fi fi fi;
 
-			applyFilterInner(lists, atoi.a2i(index), f);
+			applyFilterInner(lists, a2i(index), f);
 		}
 	};
 

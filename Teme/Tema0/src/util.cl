@@ -1,4 +1,5 @@
 class Comparator {
+    -- Intoarce Bool pentru a fi compatibil cu compararea stringurilor.
     compareTo(o1: Object, o2: Object): Bool { false };
 };
 

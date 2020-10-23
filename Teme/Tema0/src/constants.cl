@@ -1,3 +1,6 @@
+(**
+ * Defineste o serie de constante pentru a nu le hardcoda in celelalte fisiere.
+ *)
 class Constants {
 	stateListen(): String { "listen" };
 	stateLoad(): String { "load" };

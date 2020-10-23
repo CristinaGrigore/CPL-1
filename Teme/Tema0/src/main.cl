@@ -18,7 +18,7 @@ class Main inherits IO {
 		in
 			while true loop {
 				inputStr <- in_string();
-				tokenizer <- tokenizer.init(inputStr);
+				tokenizer <- tokenizer.init(inputStr, const.space());
 				token <- tokenizer.nextToken();
 
 				if state.getState() = const.stateAction() then
@@ -29,7 +29,7 @@ class Main inherits IO {
 						lists.add(crtList);
 						crtList <- new List;
 					} else
-						case parser.parseString(inputStr) of
+						case parser.getListElement(inputStr) of
 							invalid: Invalid => self;
 							obj: Object => crtList.add(obj);
 						esac

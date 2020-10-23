@@ -3,9 +3,11 @@ class StringTokenizer {
 	str: String;
 	pos: Int;
 	len: Int;
+	delim: String;
 
-	init(string: String): SELF_TYPE {{
+	init(string: String, delimiter: String): SELF_TYPE {{
 		pos <- 0;
+		delim <- delimiter;
 		str <- string;
 		len <- str.length();
 		self;
@@ -16,7 +18,7 @@ class StringTokenizer {
 			localPos: Int <- pos
 		in {
 			while localPos < len loop {
-				if str.substr(pos, 1) = const.space() then {
+				if str.substr(pos, 1) = delim then {
 					pos <- pos + 1;
 					localPos <- len;
 				} else {
