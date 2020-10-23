@@ -127,3 +127,11 @@ test/
 # Don't ignore python tests
 !runtime/Python3/test/
 
+
+# Other files
+*.txt
+
+# ANTLR-generated files
+CPLang*.java
+CPLang*.interp
+CPLang*.tokens

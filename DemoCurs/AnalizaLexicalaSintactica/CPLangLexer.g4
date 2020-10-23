@@ -1,6 +1,9 @@
 lexer grammar CPLangLexer;
 
 IF: 'if';
+THEN: 'then';
+FI: 'fi';
+ELSE: 'else';
 
 WS: [\n\r\t ]+ -> skip;
 

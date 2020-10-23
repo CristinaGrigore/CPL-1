@@ -1,5 +1,4 @@
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
@@ -19,12 +18,10 @@ public class Test {
         for (var token : tokens) {
             // Decomentati aceasta secventa in locul celei de mai jos,
             // pentru o afisare mai curata
-            /*
             var text = token.getText();
-            var type = CPLangLExer.VOCABULARY.getSymbolicName(token.getType());
-            */
+            var type = CPLangLexer.VOCABULARY.getSymbolicName(token.getType());
 
-            System.out.println(((CommonToken) token).toString(lexer));
+            System.out.println("(" + text + ": " + type + ")");
         }
     }
 }
