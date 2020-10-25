@@ -8,6 +8,7 @@ class Main inherits IO {
 	filterer: ListFilterer <- new ListFilterer;
 	sorter: ListSorter <- new ListSorter;
 	merger: ListMerger <- new ListMerger;
+	helper: Helper <- new Helper;
 
 	main(): Object {{
 		state.init(const.stateLoad());
@@ -24,7 +25,9 @@ class Main inherits IO {
 				if state.getState() = const.stateAction() then
 					handleAction(token)
 				else if state.getState() = const.stateLoad() then
-					if inputStr = const.endLoad() then {
+					if inputStr = const.actionHelp() then
+						helper.printHelp()
+					else if inputStr = const.endLoad() then {
 						state.init(const.stateAction());
 						lists.add(crtList);
 						crtList <- new List;
@@ -33,7 +36,7 @@ class Main inherits IO {
 							invalid: Invalid => self;
 							obj: Object => crtList.add(obj);
 						esac
-					fi
+					fi fi
 				else
 					out_string("Unsupported command!\n")
 				fi fi;
@@ -53,8 +56,10 @@ class Main inherits IO {
 				tokenizer.nextToken())
 		else if command = const.actionMerge() then
 			merger.merge(lists, tokenizer.nextToken(), tokenizer.nextToken())
+		else if command = const.actionHelp() then
+			helper.printHelp()
 		else
 			self
-		fi fi fi fi fi
+		fi fi fi fi fi fi
 	};
 };

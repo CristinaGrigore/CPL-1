@@ -8,6 +8,7 @@ class Constants {
 	actionFilter(): String { "filterBy" };
 	actionSort(): String { "sortBy" };
 	actionMerge(): String { "merge" };
+	actionHelp(): String { "help" };
 
 	endLoad(): String { "END" };
 
