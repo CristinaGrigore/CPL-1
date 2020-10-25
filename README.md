@@ -15,13 +15,15 @@ Introducere in COOL:
 Se implementeaza o gramatica minimalista pentru `CPLang`. Gramatica parseaza
 `Int`-uri, `Float`-uri, `String`-uri, comentarii, variabile, spatii si erori.
 
+### Demo Analiza Sintactica
+Se parseaza expresii de tipul `if <expr> then <expr> else <expr>`.
 
 ## Laboratoare
-### Laborator 1 - Setup
+### Laborator 0 - Setup
 Introducere in ANTLR: se creeaza o gramatica simpla care accepta
 `"Hello {nume}"`.
 
-### Laborator 2 - COOL
+### Laborator 1 - COOL
 Se implementeaza urmatoarele exercitii in `COOL` cu scopul familiarizarii cu
 sintaxa limbajului:
 1. Gasirea celui de-al `n`-lea termen Fibonacci atat recursiv, cat si iterativ
@@ -31,3 +33,7 @@ implementeaza o lista inlantuita + **bonus:**
 3. Funcionalele `map()` si `filter()` particularizate astfel:
 	- `map(+ 1, l)`
 	- `filter(isEven, l)`
+
+### Laborator 2 - Analiza Lexicala
+Se parseaza si se scriu intr-un fisier de output tokenii dintr-un fisier sursa
+scris in `CPLang`.
