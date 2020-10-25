@@ -11,3 +11,8 @@ Bool b = x == x;
 print_bool(b);
 x = if b then 5 else 7 fi;
 print_int(x);
+/*
+Int a;
+*/
+*/
+/*

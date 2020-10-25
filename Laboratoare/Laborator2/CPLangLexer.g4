@@ -17,7 +17,8 @@ DELIM: ';';
 COMMA: ',';
 
 LINE_COMMENT: '//' .*? '\n' -> skip;
-BLOCK_COMMENT: '/*' (BLOCK_COMMENT | .)*? '*/' -> skip;
+BLOCK_COMMENT: '/*' (BLOCK_COMMENT | .)*? ('*/' | EOF { System.err.println("ERROR: Unclosed block comment"); }) -> skip;
+INCORRECT_COMMENT: '*/' { System.err.println("ERROR: Unopened block comment"); } -> skip;
 
 /**
  * Cuvânt cheie.
@@ -120,11 +121,10 @@ WS: [ \n\r\t]+ -> skip;
  * STR, se va construi un token cu categoria STR și întregul conținut al șirului
  * drept lexem.
  */
-/*
-STR_OPEN : '"' -> pushMode(IN_STR), more;
+
+STR_OPEN: '"' -> pushMode(IN_STR), more;
 
 mode IN_STR;
 
-STR : '"' -> popMode;
-CHAR : ('\\"' | ~'"') -> more;  // ~ = complement
-*/
+STR: '"' -> popMode;
+CHAR: ('\\"' | ~'"') -> more;  // ~ = complement
