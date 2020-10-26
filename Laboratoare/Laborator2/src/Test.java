@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.*;
 
 
 public class Test {
-
 	public static void main(String[] args) throws IOException {
 		var input = CharStreams.fromFileName("manual.txt");
 		FileWriter fileWriter = new FileWriter("output.txt");

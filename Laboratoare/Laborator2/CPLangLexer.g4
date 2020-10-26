@@ -31,11 +31,6 @@ TRUE: 'true';
 FALSE: 'false';
 
 /**
- * Tip de date.
- */
-TYPE: UPPERCASE(LOWERCASE | UPPERCASE | '_' | DIGIT)*;
-
-/**
  * Brackets.
  */
 OPEN_ROUND_BRACK: '(';
@@ -69,10 +64,17 @@ ATTRIB: '=';
  */
 INT: DIGIT+;
 
+fragment NAME: (LOWERCASE | UPPERCASE | '_' | DIGIT)*;
+
+/**
+ * Tip de date.
+ */
+TYPE: UPPERCASE NAME;
+
 /**
  * Identificator.
  */
-ID: LOWERCASE(LOWERCASE | UPPERCASE | '_' | DIGIT)*;
+ID: LOWERCASE NAME;
 
 /**
  * Număr real.
