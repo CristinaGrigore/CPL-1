@@ -18,6 +18,12 @@ Se implementeaza o gramatica minimalista pentru `CPLang`. Gramatica parseaza
 ### Demo Analiza Sintactica
 Se parseaza expresii de tipul `if <expr> then <expr> else <expr>`.
 
+### Demo Arbori Abstracti de Sintaxa
+Folosindu-se interfetele `Listener` si `Visitor` generate de *ANTLR*, se
+implementeaza clase pentru tipurile de noduri definite pana acum (`ID`, `IF`,
+`INT`) si se genereaza un arbore abstract de sintaxa ce contine noduri de aceste
+tipuri.
+
 ## Laboratoare
 ### Laborator 0 - Setup
 Introducere in ANTLR: se creeaza o gramatica simpla care accepta
