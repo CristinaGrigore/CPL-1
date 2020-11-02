@@ -215,7 +215,6 @@ public class Test {
         	task3();
         else {
         	System.err.println("Provide correct number!");
-        	return;
         }
     }
-};
+}

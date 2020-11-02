@@ -65,8 +65,8 @@ definition
 expr
 	: IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI     # if
 	| ID LPAREN (expr (COMMA expr)*)? RPAREN						# funcCall
-	| MINUS op=expr													# minusExpr
 	| LPAREN op=expr RPAREN											# paren
+	| MINUS op=expr													# minusExpr
 	| ID                                                            # id
 	| INT                                                           # int
 	| BOOL															# bool
