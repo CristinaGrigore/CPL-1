@@ -194,9 +194,12 @@ class Assign extends Expression {
     }
 }
 
-class Float extends Expression {
-    public Float(Token token) {
+class FloatNode extends Expression {
+    Float num;
+
+    public FloatNode(Token token) {
         super(token);
+        num = Float.parseFloat(token.getText());
     }
 
     @Override
@@ -206,8 +209,11 @@ class Float extends Expression {
 }
 
 class Bool extends Expression {
+    Boolean val;
+
     public Bool(Token token) {
         super(token);
+        val = Boolean.parseBoolean(token.getText());
     }
 
     @Override

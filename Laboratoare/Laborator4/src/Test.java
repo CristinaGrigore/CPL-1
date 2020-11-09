@@ -150,7 +150,7 @@ public class Test {
 
             @Override
             public ASTNode visitFloat(CPLangParser.FloatContext ctx) {
-                return new Float(ctx.FLOAT().getSymbol());
+                return new FloatNode(ctx.FLOAT().getSymbol());
             }
 
             @Override
@@ -292,14 +292,14 @@ public class Test {
             }
 
             @Override
-            public Void visit(Float floatt) {
-                printIndent(floatt.token.getText());
+            public Void visit(FloatNode floatt) {
+                printIndent(floatt.num.toString());
                 return null;
             }
 
             @Override
             public Void visit(Bool booll) {
-                printIndent(booll.token.getText());
+                printIndent(booll.val.toString());
                 return null;
             }
 

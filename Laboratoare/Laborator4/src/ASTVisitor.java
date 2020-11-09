@@ -11,7 +11,7 @@ public interface ASTVisitor<T> {
     T visit(Minus minus);
     T visit(Relational relational);
     T visit(Assign assign);
-    T visit(Float floatt);
+    T visit(FloatNode floatt);
     T visit(Bool booll);
     T visit(Formal formal);
     T visit(VarDef varDef);
