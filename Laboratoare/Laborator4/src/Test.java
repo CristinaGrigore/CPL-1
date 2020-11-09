@@ -1,15 +1,13 @@
 import java.io.IOException;
-import java.util.*;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 
 public class Test {
 
     public static void main(String[] args) throws IOException {
-        var input = CharStreams.fromFileName("program2.txt");
+        var input = CharStreams.fromFileName("manual.txt");
 
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
@@ -99,11 +97,19 @@ public class Test {
 
             @Override
             public ASTNode visitPlusMinus(CPLangParser.PlusMinusContext ctx) {
-                return new PlusMinus(
-                        ctx.op,
-                        (Expression)visit(ctx.left),
-                        (Expression)visit(ctx.right)
-                );
+                if (ctx.op.getText().equals("+")) {
+                    return new Plus(
+                            ctx.op,
+                            (Expression)visit(ctx.left),
+                            (Expression)visit(ctx.right)
+                    );
+                } else {
+                    return new Minus(
+                            ctx.op,
+                            (Expression)visit(ctx.left),
+                            (Expression)visit(ctx.right)
+                    );
+                }
             }
 
             @Override
@@ -113,11 +119,19 @@ public class Test {
 
             @Override
             public ASTNode visitMultDiv(CPLangParser.MultDivContext ctx) {
-                return new MultDiv(
-                        ctx.op,
-                        (Expression)visit(ctx.left),
-                        (Expression)visit(ctx.right)
-                );
+                if (ctx.op.getText().equals("*")) {
+                    return new Mult(
+                            ctx.op,
+                            (Expression)visit(ctx.left),
+                            (Expression)visit(ctx.right)
+                    );
+                } else {
+                    return new Div(
+                            ctx.op,
+                            (Expression)visit(ctx.left),
+                            (Expression)visit(ctx.right)
+                    );
+                }
             }
 
             @Override
@@ -206,24 +220,48 @@ public class Test {
             }
 
             @Override
-            public Void visit(MultDiv multDiv) {
-                printIndent(multDiv.token.getText());
+            public Void visit(Mult mult) {
+                printIndent(mult.token.getText());
 
                 ++indent;
-                multDiv.leftExpr.accept(this);
-                multDiv.rightExpr.accept(this);
+                mult.leftExpr.accept(this);
+                mult.rightExpr.accept(this);
                 --indent;
 
                 return null;
             }
 
             @Override
-            public Void visit(PlusMinus plusMinus) {
-                printIndent(plusMinus.token.getText());
+            public Void visit(Div div) {
+                printIndent(div.token.getText());
 
                 ++indent;
-                plusMinus.leftExpr.accept(this);
-                plusMinus.rightExpr.accept(this);
+                div.leftExpr.accept(this);
+                div.rightExpr.accept(this);
+                --indent;
+
+                return null;
+            }
+
+            @Override
+            public Void visit(Plus plus) {
+                printIndent(plus.token.getText());
+
+                ++indent;
+                plus.leftExpr.accept(this);
+                plus.rightExpr.accept(this);
+                --indent;
+
+                return null;
+            }
+
+            @Override
+            public Void visit(Minus minus) {
+                printIndent(minus.token.getText());
+
+                ++indent;
+                minus.leftExpr.accept(this);
+                minus.rightExpr.accept(this);
                 --indent;
 
                 return null;
@@ -288,8 +326,9 @@ public class Test {
                 if (varDef.value != null) {
                     ++indent;
                     varDef.value.accept(this);
-                    indent -= 2;
+                    --indent;
                 }
+                --indent;
 
                 return null;
             }

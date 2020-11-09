@@ -5,8 +5,10 @@ public interface ASTVisitor<T> {
     // TODO2: Adăugați metode pentru fiecare clasă definită anterior
     T visit(Call call);
     T visit(UnaryMinus unaryMinus);
-    T visit(MultDiv multDiv);
-    T visit(PlusMinus plusMinus);
+    T visit(Mult mult);
+    T visit(Div div);
+    T visit(Plus plus);
+    T visit(Minus minus);
     T visit(Relational relational);
     T visit(Assign assign);
     T visit(Float floatt);

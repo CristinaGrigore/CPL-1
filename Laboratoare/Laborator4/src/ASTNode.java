@@ -98,11 +98,11 @@ class UnaryMinus extends Expression {
     }
 }
 
-class MultDiv extends Expression {
+class Mult extends Expression {
     Expression leftExpr;
     Expression rightExpr;
 
-    public MultDiv(Token op, Expression leftExpr, Expression rightExpr) {
+    public Mult(Token op, Expression leftExpr, Expression rightExpr) {
         super(op);
         this.leftExpr = leftExpr;
         this.rightExpr = rightExpr;
@@ -114,11 +114,43 @@ class MultDiv extends Expression {
     }
 }
 
-class PlusMinus extends Expression {
+class Div extends Expression {
     Expression leftExpr;
     Expression rightExpr;
 
-    public PlusMinus(Token op, Expression leftExpr, Expression rightExpr) {
+    public Div(Token op, Expression leftExpr, Expression rightExpr) {
+        super(op);
+        this.leftExpr = leftExpr;
+        this.rightExpr = rightExpr;
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+}
+
+class Plus extends Expression {
+    Expression leftExpr;
+    Expression rightExpr;
+
+    public Plus(Token op, Expression leftExpr, Expression rightExpr) {
+        super(op);
+        this.leftExpr = leftExpr;
+        this.rightExpr = rightExpr;
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+}
+
+class Minus extends Expression {
+    Expression leftExpr;
+    Expression rightExpr;
+
+    public Minus(Token op, Expression leftExpr, Expression rightExpr) {
         super(op);
         this.leftExpr = leftExpr;
         this.rightExpr = rightExpr;
