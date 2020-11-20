@@ -1,5 +1,9 @@
 public interface ASTVisitor<T> {
-	public T visit(IntNode node);
-	public T visit(IdNode node);
-	public T visit(IfNode node);
+	T visit(IntNode intNode);
+	T visit(IdNode idNode);
+	T visit(IfNode ifNode);
+	T visit(BlockNode blockNode);
+	T visit(TypeNode typeNode);
+	T visit(VarDefNode varDefNode);
+	T visit(PlusNode plusNode);
 }
