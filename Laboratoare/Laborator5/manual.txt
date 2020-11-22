@@ -1,0 +1,19 @@
+/* Exemplu
+   de program /* CPLang */
+*/
+Int x;
+Int y = x;
+Int inc(Int x) { x + 1 };
+x = inc(y);
+print_float(mult(x, y));  // utilizare mult inainte de definire
+Float mult(Float x, Float y) { x + y * .5 };
+Bool b = x == x;
+print_bool(b);
+x = if b then 5 else 7 fi;
+print_int(x);
+Int z = -x + 1;
+Int w = (7 + 2) * 3 / x;
+Bool var = 2 < y + 1 == false;
+print_bool(var);
+Float avg(Int x, Int y, Int z, Int w) { (x + y + z + w) / 4 };
+print_float(avg(x, y, z, w));

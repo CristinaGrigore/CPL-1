@@ -1,0 +1,9 @@
+Int y = x; // x nu este definit inca, si nu exista forward declarations la variabile in CPLang
+mult(2, 3);  // functia nu exista
+Int x;
+Int x;
+x(1, 2); // x e variabila
+Float sum(Int x, Int y, Int z, Int w) { x + y + z + w };
+sum = 5; // sum e functie
+Float sum(Int x, Int y, Int z) { x + y + z };
+Int wrong_param(Int x) { z };

@@ -1,0 +1,7 @@
+line 1:9, x undefined
+line 4:5, x redefined
+line 8:7, sum function redefined
+line 9:26, z undefined
+line 2:1, mult function undefined
+line 5:1, x is not a function
+line 7:1, sum is not a variable
