@@ -78,7 +78,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         id.setSymbol(symbol);
         currentScope = symbol;
 
-        funcDef.formals.forEach(this::visit);  // TODO: daca ia muie -> baga accept
+        funcDef.formals.forEach(this::visit);
         funcDef.body.accept(this);
 
         currentScope = currentScope.getParent();
