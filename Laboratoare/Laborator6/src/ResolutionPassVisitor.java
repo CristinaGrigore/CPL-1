@@ -41,7 +41,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             if (type == null) {
                 ASTVisitor.error(
                         varDef.initValue.getToken(),
-                        "Type of initilization expression does not match variable type"
+                        "Type of initialization expression does not match variable type"
                 );
             }
         }
@@ -170,7 +170,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             ASTVisitor.error(iff.cond.getToken(), "Condition of if expression has type other than Bool");
         }
 
-        var exprType = getResultType(thenType, elseType);
+        var exprType = getCompatibleTypes(thenType, elseType);
         if (exprType == null) {
             ASTVisitor.error(iff.getToken(), "Branches of if expression have incompatible types");
         }
@@ -243,6 +243,12 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         var leftSymbol = relational.left.accept(this);
         var rightSymbol = relational.right.accept(this);
 
+        if (relational.getToken().getType() == CPLangLexer.EQUAL
+                && leftSymbol == TypeSymbol.BOOL && rightSymbol == TypeSymbol.BOOL
+        ) {
+            return TypeSymbol.BOOL;
+        }
+
         if (getResultType(leftSymbol, rightSymbol) == null) {
             ASTVisitor.error(
                     relational.getToken(),
@@ -287,6 +293,22 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
 
         return type;
+    }
+
+    private TypeSymbol getCompatibleTypes(TypeSymbol left, TypeSymbol right) {
+        if (left == null || right == null) {
+            return null;
+        }
+
+        if (left == right) {
+            return left;
+        }
+
+        if (left == TypeSymbol.FLOAT || right == TypeSymbol.FLOAT) {
+            return TypeSymbol.FLOAT;
+        }
+
+        return null;
     }
 
     private TypeSymbol getResultType(TypeSymbol left, TypeSymbol right) {
