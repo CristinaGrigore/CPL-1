@@ -55,3 +55,9 @@ un visitor implementat (aproape) de la 0.
 ### Tema 0 - COOL
 Operatii de adaugare, stergere, `filter`, sortare si afisare aplicate pe liste,
 cu scopul intelegerii limbajului `COOL`. Un tractor, dar un tractor necesar...
+
+### Tema 1 - Analiza Lexicala si Sintactica
+Se implementeaza un parser ce foloseste patternul *Visitor*, ca in
+[demo-ul de la curs](https://github.com/teodutu/CPL/tree/main/DemoCurs/Analiza).
+Se afiseaza arborele de expresie care rezulta din parsarea codului din fisierul
+de input.
