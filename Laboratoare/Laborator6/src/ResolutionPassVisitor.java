@@ -44,8 +44,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                         "Type of initilization expression does not match variable type"
                 );
             }
-
-            return type;
         }
         
         return null;
@@ -108,21 +106,22 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
 
-        var args = call.args.stream().map(arg -> arg.accept((this))).collect(Collectors.toList());
+        var argsTypes = call.args.stream().map(arg -> arg.accept((this))).collect(Collectors.toList());
 
         int i = 0;
         for (var val : formals.values()) {
-            if (((IdSymbol)val).getType() != args.get(i)) {
+            if (getAssignType(((IdSymbol)val).getType(), argsTypes.get(i)) == null) {
                 ASTVisitor.error(
                         call.args.get(i).getToken(),
                         "Argument " + (i + 1) + " of " + call.getToken().getText() + " has wrong type"
                 );
                 return null;
             }
+            ++i;
         }
         
         return functionSymbol.getType();
-    }   
+    }
     
     @Override
     public TypeSymbol visit(Assign assign) {
@@ -131,6 +130,10 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         
         // TODO 5: Verificăm dacă expresia cu care se realizează atribuirea
         // are tipul potrivit cu cel declarat pentru variabilă.
+        if (idType == null || exprType == null) {
+            return null;
+        }
+
         var assignType = getAssignType(idType, exprType);
         if (assignType == null) {
             ASTVisitor.error(assign.expr.getToken(), "Assignment with incompatible types");
@@ -164,7 +167,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         // TODO 4: Verificați tipurile celor 3 componente, afișați eroare
         // dacă este cazul, și precizați tipul expresiei.
         if (condType != TypeSymbol.BOOL) {
-            ASTVisitor.error(iff.getToken(), "Condition of if expression has type other than Bool");
+            ASTVisitor.error(iff.cond.getToken(), "Condition of if expression has type other than Bool");
         }
 
         var exprType = getResultType(thenType, elseType);
