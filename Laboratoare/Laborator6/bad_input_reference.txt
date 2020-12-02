@@ -1,0 +1,15 @@
+line 1:9, Type of initilization expression does not match variable type
+line 4:5, Assignment with incompatible types
+line 5:5, Assignment with incompatible types
+line 8:5, Assignment with incompatible types
+line 9:25, Return type does not match body type
+line 10:5, Assignment with incompatible types
+line 12:1, f applied to wrong number of arguments
+line 13:6, Argument 2 of f has wrong type
+line 14:8, Condition of if expression has type other than Bool
+line 14:5, Branches of if expression have incompatible types
+line 15:5, Assignment with incompatible types
+line 16:7, Operands of + have incompatible types
+line 17:7, Assignment with incompatible types
+line 19:3, Operands of < have incompatible types
+line 21:7, Assignment with incompatible types

@@ -1,0 +1,21 @@
+Int x = true;  // initializare incorecta
+Int y;
+Float z;
+x = false;  // atribuire incorecta
+x = 5.2;  // atribuire incorecta
+x = y;
+x = 2;
+x = z;  // atribuire incorecta
+Float f(Int x, Int y) { true };  // corp cu alt tip decat cel declarat
+x = f(2, 3);  // atribuire incorecta
+z = f(2, 3);
+f(2);  // numar diferit de parametri actuali
+f(2, z);  // parametrul 2 are tipul gresit
+x = if 3 then 1 else false fi;  // conditie nebooleana si ramuri cu tipuri diferite
+x = if true then 2.2 else z fi;  // atribuire incorecta
+x = 3 + true;  // adunare cu tipuri incompatibile
+x = z + z;  // atribuire incorecta
+z = z + z;
+2 < false;  // tipuri incompatibile
+Bool b = 2 < 3;
+x = 2 < 3;  // atribuire incorecta
