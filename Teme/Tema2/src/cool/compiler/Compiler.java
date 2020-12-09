@@ -1,7 +1,6 @@
 package cool.compiler;
 
 import cool.visitor.ASTConstructionVisitor;
-import cool.visitor.ASTStringifyVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -124,19 +123,16 @@ public class Compiler {
         }
 
         var astBuilder = new ASTConstructionVisitor();
-        var astStringifier = new ASTStringifyVisitor();
-
         var ast = astBuilder.visit(globalTree);
-        System.out.print(ast.accept(astStringifier));
 
         // Populate global scope.
         SymbolTable.defineBasicClasses();
         
         // TODO Semantic analysis
-        
+
+
         if (SymbolTable.hasSemanticErrors()) {
             System.err.println("Compilation halted");
-            return;
         }
     }
 }

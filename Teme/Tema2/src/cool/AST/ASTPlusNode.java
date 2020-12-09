@@ -1,11 +1,12 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTPlusNode extends ASTBinaryOperatorNode {
-	public ASTPlusNode(Token symbol, ASTExpressionNode leftOp, ASTExpressionNode rightOp) {
-		super(symbol, leftOp, rightOp);
+	public ASTPlusNode(ParserRuleContext context, Token symbol, ASTExpressionNode leftOp, ASTExpressionNode rightOp) {
+		super(context, symbol, leftOp, rightOp);
 	}
 
 	@Override

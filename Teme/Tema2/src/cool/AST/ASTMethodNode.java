@@ -1,6 +1,7 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import java.util.List;
@@ -12,12 +13,13 @@ public class ASTMethodNode extends ASTClassContentNode {
 	private final List<ASTExpressionNode> body;
 
 	public ASTMethodNode(
+			ParserRuleContext context,
 			Token name,
 			Token retType,
 			List<ASTFormalNode> params,
 			List<ASTExpressionNode> body
 	) {
-		super("method");
+		super(context, "method");
 		this.name = name;
 		this.retType = retType;
 		this.params = params;

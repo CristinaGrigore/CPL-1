@@ -10,6 +10,7 @@ public interface ASTVisitor<T> {
 	T visit(ASTAttributeNode attributeNode);
 	T visit(ASTLocalVarNode localVarNode);
 	T visit(ASTIntNode intNode);
+	T visit(ASTIdNode idNode);
 	T visit(ASTBoolNode boolNode);
 	T visit(ASTStringNode stringNode);
 	T visit(ASTAssignNode assignNode);

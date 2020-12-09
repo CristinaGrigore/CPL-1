@@ -1,14 +1,15 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTWhileNode extends ASTExpressionNode {
 	private final ASTExpressionNode cond;
 	private final ASTExpressionNode body;
 
-	public ASTWhileNode(ASTExpressionNode cond, ASTExpressionNode body) {
-		super("while");
+	public ASTWhileNode(ParserRuleContext context, ASTExpressionNode cond, ASTExpressionNode body) {
+		super(context, "while");
 		this.cond = cond;
 		this.body = body;
 	}

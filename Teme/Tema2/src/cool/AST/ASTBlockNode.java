@@ -1,14 +1,15 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 
 public class ASTBlockNode extends ASTExpressionNode {
 	private final List<ASTExpressionNode> expressions;
 
-	public ASTBlockNode(List<ASTExpressionNode> expressions) {
-		super("block");
+	public ASTBlockNode(ParserRuleContext context, List<ASTExpressionNode> expressions) {
+		super(context, "block");
 		this.expressions = expressions;
 	}
 

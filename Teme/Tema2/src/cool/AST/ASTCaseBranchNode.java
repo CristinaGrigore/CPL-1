@@ -1,6 +1,7 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTCaseBranchNode extends ASTNode {
@@ -8,8 +9,8 @@ public class ASTCaseBranchNode extends ASTNode {
 	private final Token type;
 	private final ASTExpressionNode body;
 
-	public ASTCaseBranchNode(Token id, Token type, ASTExpressionNode body) {
-		super("case branch");
+	public ASTCaseBranchNode(ParserRuleContext context, Token id, Token type, ASTExpressionNode body) {
+		super(context, "case branch");
 		this.id = id;
 		this.type = type;
 		this.body = body;

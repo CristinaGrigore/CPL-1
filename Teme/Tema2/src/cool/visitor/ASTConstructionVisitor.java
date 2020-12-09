@@ -13,7 +13,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.stream()
 				.map(node -> (ASTClassNode)visitClassDef(node))
 				.collect(Collectors.toList());
-		return new ASTProgramNode(classList);
+		return new ASTProgramNode(ctx, classList);
 	}
 
 	@Override
@@ -23,7 +23,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.map(node -> (ASTClassContentNode)visit(node))
 				.collect(Collectors.toList());
 
-		return new ASTClassNode(ctx.name, ctx.baseName, contentList);
+		return new ASTClassNode(ctx, ctx.name, ctx.baseName, contentList);
 	}
 
 	@Override
@@ -33,6 +33,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				: null;
 
 		return new ASTAttributeNode(
+				ctx,
 				ctx.ID().getSymbol(),
 				ctx.TYPE().getSymbol(),
 				value
@@ -51,6 +52,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.collect(Collectors.toList());
 
 		return new ASTMethodNode(
+				ctx,
 				ctx.ID().getSymbol(),
 				ctx.TYPE().getSymbol(),
 				paramsList,
@@ -65,6 +67,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				: null;
 
 		return new ASTLocalVarNode(
+				ctx,
 				ctx.ID().getSymbol(),
 				ctx.TYPE().getSymbol(),
 				value
@@ -74,6 +77,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitCaseBranch(CoolParser.CaseBranchContext ctx) {
 		return new ASTCaseBranchNode(
+				ctx,
 				ctx.ID().getSymbol(),
 				ctx.TYPE().getSymbol(),
 				(ASTExpressionNode)visit(ctx.body)
@@ -82,12 +86,13 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitNew(CoolParser.NewContext ctx) {
-		return new ASTNewNode(ctx.TYPE().getSymbol());
+		return new ASTNewNode(ctx, ctx.TYPE().getSymbol());
 	}
 
 	@Override
 	public ASTNode visitMinus(CoolParser.MinusContext ctx) {
 		return new ASTMinusNode(
+				ctx,
 				ctx.MINUS().getSymbol(),
 				(ASTExpressionNode)visit(ctx.leftOp),
 				(ASTExpressionNode)visit(ctx.rightOp)
@@ -97,6 +102,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitMult(CoolParser.MultContext ctx) {
 		return new ASTMultNode(
+				ctx,
 				ctx.MULT().getSymbol(),
 				(ASTExpressionNode)visit(ctx.leftOp),
 				(ASTExpressionNode)visit(ctx.rightOp)
@@ -106,6 +112,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitPlus(CoolParser.PlusContext ctx) {
 		return new ASTPlusNode(
+				ctx,
 				ctx.PLUS().getSymbol(),
 				(ASTExpressionNode)visit(ctx.leftOp),
 				(ASTExpressionNode)visit(ctx.rightOp)
@@ -115,6 +122,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitDiv(CoolParser.DivContext ctx) {
 		return new ASTDivNode(
+				ctx,
 				ctx.DIV().getSymbol(),
 				(ASTExpressionNode)visit(ctx.leftOp),
 				(ASTExpressionNode)visit(ctx.rightOp)
@@ -123,22 +131,24 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitBool(CoolParser.BoolContext ctx) {
-		return new ASTBoolNode(ctx.BOOL().getSymbol());
+		return new ASTBoolNode(ctx, ctx.BOOL().getSymbol());
 	}
 
 	@Override
 	public ASTNode visitString(CoolParser.StringContext ctx) {
-		return new ASTStringNode(ctx.STRING().getSymbol());
+		return new ASTStringNode(ctx, ctx.STRING().getSymbol());
 	}
 
 	@Override
 	public ASTNode visitIsvoid(CoolParser.IsvoidContext ctx) {
-		return new ASTNegNode(ctx.ISVOID().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
+		return new ASTIsVoidNode(ctx, ctx.ISVOID().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
 	}
 
 	@Override
 	public ASTNode visitBlock(CoolParser.BlockContext ctx) {
-		return new ASTBlockNode(ctx.body
+		return new ASTBlockNode(
+				ctx,
+				ctx.body
 				.stream()
 				.map(node -> (ASTExpressionNode)visit(node))
 				.collect(Collectors.toList())
@@ -148,6 +158,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitWhile(CoolParser.WhileContext ctx) {
 		return new ASTWhileNode(
+				ctx,
 				(ASTExpressionNode)visit(ctx.cond),
 				(ASTExpressionNode)visit(ctx.body)
 		);
@@ -156,6 +167,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitRelOp(CoolParser.RelOpContext ctx) {
 		return new ASTRelOpNode(
+				ctx,
 				ctx.op,
 				(ASTExpressionNode)visit(ctx.leftOp),
 				(ASTExpressionNode)visit(ctx.rightOp)
@@ -164,17 +176,17 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitNot(CoolParser.NotContext ctx) {
-		return new ASTNotNode(ctx.NOT().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
+		return new ASTNotNode(ctx, ctx.NOT().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
 	}
 
 	@Override
 	public ASTNode visitInt(CoolParser.IntContext ctx) {
-		return new ASTIntNode(ctx.start);
+		return new ASTIntNode(ctx, ctx.start);
 	}
 
 	@Override
 	public ASTNode visitNeg(CoolParser.NegContext ctx) {
-		return new ASTNegNode(ctx.NEG().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
+		return new ASTNegNode(ctx, ctx.NEG().getSymbol(), (ASTExpressionNode)visit(ctx.expr()));
 	}
 
 	@Override
@@ -189,17 +201,18 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.map(node -> (ASTLocalVarNode)visit(node))
 				.collect(Collectors.toList());
 
-		return new ASTLetNode(localVars, (ASTExpressionNode)visit(ctx.body));
+		return new ASTLetNode(ctx, localVars, (ASTExpressionNode)visit(ctx.body));
 	}
 
 	@Override
 	public ASTNode visitId(CoolParser.IdContext ctx) {
-		return new ASTIntNode(ctx.start);
+		return new ASTIdNode(ctx, ctx.start);
 	}
 
 	@Override
 	public ASTNode visitIf(CoolParser.IfContext ctx) {
 		return new ASTIfNode(
+				ctx,
 				(ASTExpressionNode)visit(ctx.cond),
 				(ASTExpressionNode)visit(ctx.thenBranch),
 				(ASTExpressionNode)visit(ctx.elseBranch)
@@ -213,17 +226,17 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.map(node -> (ASTCaseBranchNode)visit(node))
 				.collect(Collectors.toList());
 
-		return new ASTCaseNode((ASTExpressionNode)visit(ctx.var), branchesList);
+		return new ASTCaseNode(ctx, (ASTExpressionNode)visit(ctx.var), branchesList);
 	}
 
 	@Override
 	public ASTNode visitAssign(CoolParser.AssignContext ctx) {
-		return new ASTAssignNode(ctx.ID().getSymbol(),(ASTExpressionNode)visit(ctx.expr()));
+		return new ASTAssignNode(ctx, ctx.ID().getSymbol(),(ASTExpressionNode)visit(ctx.expr()));
 	}
 
 	@Override
 	public ASTNode visitFormal(CoolParser.FormalContext ctx) {
-		return new ASTFormalNode(ctx.ID().getSymbol(), ctx.TYPE().getSymbol());
+		return new ASTFormalNode(ctx, ctx.ID().getSymbol(), ctx.TYPE().getSymbol());
 	}
 
 	@Override
@@ -234,6 +247,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.collect(Collectors.toList());
 
 		return new ASTDispatchNode(
+				ctx,
 				"implicit dispatch",
 				null,
 				null,
@@ -253,6 +267,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 		var typeSymbol = type != null ? type.getSymbol() : null;
 
 		return new ASTDispatchNode(
+				ctx,
 				".",
 				(ASTExpressionNode)visit(ctx.caller),
 				typeSymbol,

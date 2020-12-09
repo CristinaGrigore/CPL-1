@@ -1,6 +1,7 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 
@@ -8,8 +9,8 @@ public class ASTLetNode extends ASTExpressionNode{
 	private final List<ASTLocalVarNode> locals;
 	private final ASTExpressionNode body;
 
-	public ASTLetNode(List<ASTLocalVarNode> locals, ASTExpressionNode body) {
-		super("let");
+	public ASTLetNode(ParserRuleContext context, List<ASTLocalVarNode> locals, ASTExpressionNode body) {
+		super(context, "let");
 		this.locals = locals;
 		this.body = body;
 	}

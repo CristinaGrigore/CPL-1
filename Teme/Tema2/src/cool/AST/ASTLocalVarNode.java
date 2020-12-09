@@ -1,6 +1,7 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTLocalVarNode extends ASTClassContentNode {
@@ -8,8 +9,8 @@ public class ASTLocalVarNode extends ASTClassContentNode {
 	private final Token type;
 	private final ASTExpressionNode value;
 
-	public ASTLocalVarNode(Token name, Token type, ASTExpressionNode value) {
-		super("local");
+	public ASTLocalVarNode(ParserRuleContext context, Token name, Token type, ASTExpressionNode value) {
+		super(context, "local");
 		this.name = name;
 		this.type = type;
 		this.value = value;

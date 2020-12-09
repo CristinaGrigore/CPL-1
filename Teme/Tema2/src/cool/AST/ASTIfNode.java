@@ -1,6 +1,7 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTIfNode extends ASTExpressionNode {
@@ -9,11 +10,12 @@ public class ASTIfNode extends ASTExpressionNode {
 	private final ASTExpressionNode elseBranch;
 
 	public ASTIfNode(
+			ParserRuleContext context,
 			ASTExpressionNode cond,
 			ASTExpressionNode thenBranch,
 			ASTExpressionNode elseBranch
 	) {
-		super("if");
+		super(context, "if");
 		this.cond = cond;
 		this.thenBranch = thenBranch;
 		this.elseBranch = elseBranch;

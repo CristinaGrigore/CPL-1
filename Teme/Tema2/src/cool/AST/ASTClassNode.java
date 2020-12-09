@@ -1,18 +1,18 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ASTClassNode extends ASTNode {
 	private final Token name;
 	private final Token baseName;
 	private final List<ASTClassContentNode> content;
 
-	public ASTClassNode(Token name, Token baseName, List<ASTClassContentNode> content) {
-		super("class");
+	public ASTClassNode(ParserRuleContext context, Token name, Token baseName, List<ASTClassContentNode> content) {
+		super(context, "class");
 		this.name = name;
 		this.baseName = baseName;
 		this.content = content;

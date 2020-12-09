@@ -1,14 +1,15 @@
 package cool.AST;
 
 import cool.visitor.ASTVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 public class ASTAssignNode extends ASTExpressionNode {
 	private final Token id;
 	private final ASTExpressionNode value;
 
-	public ASTAssignNode(Token id, ASTExpressionNode value) {
-		super("<-");
+	public ASTAssignNode(ParserRuleContext context, Token id, ASTExpressionNode value) {
+		super(context, "<-");
 		this.id = id;
 		this.value = value;
 	}

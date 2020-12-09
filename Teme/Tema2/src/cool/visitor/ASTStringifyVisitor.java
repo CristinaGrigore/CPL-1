@@ -95,7 +95,12 @@ public class ASTStringifyVisitor implements ASTVisitor<String> {
                return getStartingSymbol(intNode);
        }
 
-       @Override
+    @Override
+    public String visit(ASTIdNode idNode) {
+        return getStartingSymbol(idNode);
+    }
+
+    @Override
        public String visit(ASTBoolNode boolNode) {
                return getStartingSymbol(boolNode);
        }
