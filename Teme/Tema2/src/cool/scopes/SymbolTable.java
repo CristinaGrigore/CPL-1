@@ -1,23 +1,35 @@
-package cool.structures;
+package cool.scopes;
 
 import java.io.File;
 
+import cool.symbols.TypeSymbol;
 import org.antlr.v4.runtime.*;
 
 import cool.compiler.Compiler;
 import cool.parser.CoolParser;
 
 public class SymbolTable {
-    public static Scope globals;
+    public static GlobalScope globals;
     
     private static boolean semanticErrors;
     
     public static void defineBasicClasses() {
-        globals = new DefaultScope(null);
+        globals = new GlobalScope();
         semanticErrors = false;
         
         // TODO Populate global scope.
-//        globals.add(new)
+        globals.add(TypeSymbol.OBJECT);
+        globals.add(TypeSymbol.INT);
+        globals.add(TypeSymbol.BOOL);
+        globals.add(TypeSymbol.STRING);
+        globals.add(TypeSymbol.IO);
+
+        TypeSymbol.INT.setParent(TypeSymbol.OBJECT);
+        TypeSymbol.STRING.setParent(TypeSymbol.OBJECT);
+        TypeSymbol.BOOL.setParent(TypeSymbol.OBJECT);
+        TypeSymbol.IO.setParent(TypeSymbol.OBJECT);
+
+        // TODO: pune metodele fiecarei clase
     }
     
     /**

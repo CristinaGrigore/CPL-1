@@ -1,12 +1,15 @@
 package cool.compiler;
 
 import cool.visitor.ASTConstructionVisitor;
+import cool.visitor.ASTDefinitionVisitor;
+import cool.visitor.ASTClassHierarchyVisitor;
+import cool.visitor.ASTResolutionVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 import cool.lexer.*;
 import cool.parser.*;
-import cool.structures.SymbolTable;
+import cool.scopes.SymbolTable;
 
 import java.io.*;
 
@@ -129,7 +132,9 @@ public class Compiler {
         SymbolTable.defineBasicClasses();
         
         // TODO Semantic analysis
-
+        ast.accept(new ASTDefinitionVisitor());
+        ast.accept(new ASTClassHierarchyVisitor());
+        ast.accept(new ASTResolutionVisitor());
 
         if (SymbolTable.hasSemanticErrors()) {
             System.err.println("Compilation halted");

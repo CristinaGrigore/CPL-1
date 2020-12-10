@@ -1,5 +1,6 @@
 package cool.AST;
 
+import cool.symbols.IdSymbol;
 import cool.visitor.ASTVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -8,12 +9,21 @@ public class ASTAttributeNode extends ASTClassContentNode {
 	private final Token name;
 	private final Token type;
 	private final ASTExpressionNode value;
+	private IdSymbol idSymbol;
 
 	public ASTAttributeNode(ParserRuleContext context, Token name, Token type, ASTExpressionNode value) {
 		super(context, "attribute");
 		this.name = name;
 		this.type = type;
 		this.value = value;
+	}
+
+	public IdSymbol getIdSymbol() {
+		return idSymbol;
+	}
+
+	public void setIdSymbol(IdSymbol idSymbol) {
+		this.idSymbol = idSymbol;
 	}
 
 	public Token getName() {

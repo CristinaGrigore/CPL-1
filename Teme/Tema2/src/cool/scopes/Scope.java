@@ -1,4 +1,6 @@
-package cool.structures;
+package cool.scopes;
+
+import cool.symbols.Symbol;
 
 public interface Scope {
     public boolean add(Symbol sym);

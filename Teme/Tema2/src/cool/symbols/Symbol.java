@@ -1,7 +1,7 @@
-package cool.structures;
+package cool.symbols;
 
 public class Symbol {
-    protected String name;
+    private final String name;
     
     public Symbol(String name) {
         this.name = name;
