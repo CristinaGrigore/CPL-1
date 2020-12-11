@@ -2,12 +2,14 @@ import java.io.IOException;
 import java.util.*;
 
 import org.antlr.v4.runtime.*;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroupFile;
 
 
 public class Test {
 
     public static void main(String[] args) throws IOException {
-        var input = CharStreams.fromFileName("symbols.txt");
+        var input = CharStreams.fromFileName("program4.txt");
 
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
@@ -82,6 +84,28 @@ public class Test {
         // ast este AST-ul proaspăt construit pe baza arborelui de derivare.
         var ast = astConstructionVisitor.visit(tree);
 
+        System.out.println("===== Introducere StringTemplate =====");
+        var st1 = new ST("Cool <name; separator=\", \">");
+        st1.add("name", "compiler");
+        st1.add("name", "interpreter");
+        System.out.println(st1.render());
+
+        var st2 = new ST("internal");
+        st1.add("name", st2);  // ANTLR permite generare recursiva de cod
+        System.out.println(st1.render());
+
+        System.out.println("\n===== Testare StringTemplate =====");
+        var group = new STGroupFile("cgen.stg");
+        var literal = group.getInstanceOf("literal");  // intoarce mereu alta instanta; nu e singleton
+        literal.add("value", 5);
+        System.out.println(literal.render());
+
+        System.out.println("\n===== Generare de cod: e1 + e2 =====");
+        var plus = group.getInstanceOf("plus");  // intoarce mereu alta instanta; nu e singleton
+        plus.add("e1", literal);  // param2 formal e Object; ANTLR apeleaza toString() pe param2
+        plus.add("e2", literal);
+        System.out.println(plus.render());
+
         // ABORDAREA 1.
         // onePassVisitor permite rezolvarea simbolurilor într-o singură
         // trecere. Astfel, referirile anticipate NU pot fi rezolvate.
@@ -106,7 +130,7 @@ public class Test {
                 }
 
                 // Atașăm simbolul nodului din arbore.
-                id.setSymbol((IdSymbol)symbol);
+                id.setSymbol(symbol);
 
                 return symbol.getType();
             }
@@ -199,7 +223,7 @@ public class Test {
         // În vederea gestiunii referirilor anticipate, utilizăm două treceri,
         // una de definire a simbolurilor, și cealaltă, de rezolvare.
         var definitionPassVisitor = new ASTVisitor<Void>() {
-            Scope currentScope = null;
+            Scope currentScope = new DefaultScope(null);
 
             @Override
             public Void visit(IdNode id) {
@@ -339,12 +363,59 @@ public class Test {
 
         };
 
+        var codeGenVisitor = new ASTVisitor<ST>() {
+            @Override
+            public ST visit(IntNode intNode) {
+                return group
+                        .getInstanceOf("literal")
+                        .add("value", intNode.getToken().getText());
+            }
+
+            @Override
+            public ST visit(IdNode idNode) {
+                return null;
+            }
+
+            @Override
+            public ST visit(IfNode ifNode) {
+                return null;
+            }
+
+            @Override
+            public ST visit(BlockNode blockNode) {
+                var seq = group.getInstanceOf("sequence");
+                blockNode.statements.forEach(stmt -> seq.add("e", stmt.accept(this)));
+
+                return seq;
+            }
+
+            @Override
+            public ST visit(TypeNode typeNode) {
+                return null;
+            }
+
+            @Override
+            public ST visit(VarDefNode varDefNode) {
+                return null;
+            }
+
+            @Override
+            public ST visit(PlusNode plusNode) {
+                return group.getInstanceOf("plus")
+                        .add("e1", plusNode.left.accept(this))
+                        .add("e2", plusNode.right.accept(this));
+            }
+        };
+
         // Pentru testare, utilizați fie onePassVisitor,
         // fie definitionPassVisitor și resolutionPassVisitor concomitent.
-        ast.accept(onePassVisitor);
+//        ast.accept(onePassVisitor);
 
-//        ast.accept(definitionPassVisitor);
-//        ast.accept(resolutionPassVisitor);
+        ast.accept(definitionPassVisitor);
+        ast.accept(resolutionPassVisitor);
+
+        System.out.println("\n===== Generare de cod: bloc de expresii =====");
+        System.out.println(ast.accept(codeGenVisitor).render());
     }
 
     public static void error(Token token, String message) {

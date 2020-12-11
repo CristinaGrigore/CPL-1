@@ -1,0 +1,13 @@
+literal(value) ::= "li $a0 <value>"
+
+plus(e1, e2) ::= <<
+<e1>
+sw $a0 0($sp)
+addiu $sp $sp -4
+<e2>
+lw $t1 4($sp)
+addiu $sp $sp -4
+add $a0 $a0 $t1
+>>
+
+sequence(e) ::= "<e; separator=\"\n\">"

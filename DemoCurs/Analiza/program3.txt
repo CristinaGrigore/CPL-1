@@ -1,0 +1,18 @@
+{
+	Int x;
+	x = 3;
+
+	// se poate optimiza si propaga x la compilare
+	// daca nu, se initializeaza la inceputul lui main()
+	//		=> trebuie introdus cod extra in main() pentru asta
+	Int z = x + 1;
+
+	// x pe stiva
+	Int f(int x) { ... }
+}
+
+/*
+.data
+x:
+	.word 0
+*/

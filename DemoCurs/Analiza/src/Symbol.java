@@ -11,6 +11,11 @@ public abstract class Symbol {
 }
 
 class IdSymbol extends Symbol {
+	// Adaugam aici informatii despre stocarea variabilei:
+	//  * stiva => offsetul fata de $fp
+	//  * .data => offsetul fata de startul sectiunii
+	//  * heap => poate faptu' ca e un ptr ca sa stim dupa sa-l dereferentiem?
+
 	protected TypeSymbol type;
 
 	public IdSymbol(String name) {
