@@ -1,0 +1,15 @@
+{
+	Int x;
+	2 + x;
+	{
+		Int x;
+		Int y;
+		Int y;
+		3 + y + x;
+		{
+			Int z;
+			z + u;
+			Int u;
+		};
+	};
+};

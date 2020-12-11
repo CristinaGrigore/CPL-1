@@ -1,0 +1,15 @@
+{
+    Int x;
+    2 + x;
+    {
+        Bool x;
+        Int y;
+        Int y;
+        3 + x + y;
+        {
+            Int z;
+            z + u;
+            Char u;
+        };
+    };
+};
