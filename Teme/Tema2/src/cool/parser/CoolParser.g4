@@ -15,8 +15,8 @@ formal: ID COLON TYPE;
 varDef: ID COLON TYPE (ASSIGN value=expr)?;
 
 classContent
-	: ID COLON TYPE (ASSIGN value=expr)? SEMI																	# memberDef
-	| ID LPAREN (params+=formal (COMMA params+=formal)*)? RPAREN COLON TYPE LBRACE (body+=expr)* RBRACE SEMI	# methodDef
+	: ID COLON TYPE (ASSIGN value=expr)? SEMI																# memberDef
+	| ID LPAREN (params+=formal (COMMA params+=formal)*)? RPAREN COLON TYPE LBRACE body=expr RBRACE SEMI	# methodDef
 	;
 
 classDef: CLASS name=TYPE (INHERITS baseName=TYPE)? LBRACE (content+=classContent)* RBRACE SEMI;

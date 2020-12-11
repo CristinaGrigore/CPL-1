@@ -23,13 +23,28 @@ public class TypeSymbol extends Symbol implements Scope {
 
 		attributes = new HashMap<>();
 		methods = new HashMap<>();
+
+		var self = new IdSymbol("self");
+		self.setType(this);
+		attributes.put(self.getName(), self);
+	}
+
+	public boolean isEqCompatible(TypeSymbol other) {
+		if (
+				this == INT || this == BOOL || this == STRING
+				|| other == INT || other == BOOL || other == STRING
+		) {
+			return this == other;
+		}
+
+		return true;
 	}
 
 	public boolean inherits(TypeSymbol type) {
 		if (this == type) {
 			return true;
 		}
-
+//
 		if (parent != null) {
 			return parent.inherits(type);
 		}

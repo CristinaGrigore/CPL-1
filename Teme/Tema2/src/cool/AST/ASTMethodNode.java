@@ -11,7 +11,7 @@ public class ASTMethodNode extends ASTClassContentNode {
 	private final Token name;
 	private final Token retType;
 	private final List<ASTFormalNode> params;
-	private final List<ASTExpressionNode> body;
+	private final ASTExpressionNode body;
 	MethodSymbol methodSymbol;
 
 	public ASTMethodNode(
@@ -19,7 +19,7 @@ public class ASTMethodNode extends ASTClassContentNode {
 			Token name,
 			Token retType,
 			List<ASTFormalNode> params,
-			List<ASTExpressionNode> body
+			ASTExpressionNode body
 	) {
 		super(context, "method");
 		this.name = name;
@@ -48,7 +48,7 @@ public class ASTMethodNode extends ASTClassContentNode {
 		return params;
 	}
 
-	public List<ASTExpressionNode> getBody() {
+	public ASTExpressionNode getBody() {
 		return body;
 	}
 

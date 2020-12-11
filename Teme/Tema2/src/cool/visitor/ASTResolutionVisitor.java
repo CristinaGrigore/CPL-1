@@ -4,7 +4,11 @@ import cool.AST.*;
 import cool.parser.CoolParser;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
+import cool.symbols.IdSymbol;
+import cool.symbols.Symbol;
 import cool.symbols.TypeSymbol;
+
+import java.util.Objects;
 
 public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 	Scope scope;
@@ -90,23 +94,20 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			}
 		}
 
-//		scope = methodSymbol;
+		scope = methodSymbol;
+		var body = methodNode.getBody();
+		var bodyType = methodNode.getBody().accept(this);
 
-		// TODO: o sa fie doar NULL
-//		var body = methodNode.getBody()
-//				.stream()
-//				.map(node -> node.accept(this))
-//				.collect(Collectors.toList());
-//		if (body.get(body.size() - 1) != retSymbol) {
-//			SymbolTable.error(
-//					methodNode.getContext(),
-//					methodNode.getBody().get(body.size() - 1).getContext().start,
-//					"Type < " + body.get(body.size() - 1) + " of the body of method " + methodName
-//							+ " is incompatible with declared return type " + retSymbol
-//			);
-//		}
-
-//		scope = classScope;
+		// TODO: scoate != null cand implementezi expresii
+		if (bodyType != null && bodyType != retSymbol) {
+			SymbolTable.error(
+					methodNode.getContext(),
+					body.getContext().start,
+					"Type " + bodyType + " of the body of method " + methodName
+							+ " is incompatible with declared return type " + retSymbol
+			);
+		}
+		scope = classScope;
 
 		return null;
 	}
@@ -114,69 +115,99 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 	@Override
 	public TypeSymbol visit(ASTAttributeNode attributeNode) {
 		var symbol = attributeNode.getIdSymbol();
-
 		if (symbol == null) {
 			return null;
 		}
 
-		var attribName = attributeNode.getName().getText();
-		var typeName = attributeNode.getType().getText();
-
-		var parentScope = scope.getParent();
-		if (parentScope.lookup(attribName) != null) {
-			SymbolTable.error(
-					attributeNode.getContext(),
-					attributeNode.getName(),
-					"Class " + ((TypeSymbol)scope).getName()
-							+ " redefines inherited attribute " + attribName
-			);
-			return null;
-		}
-
-		var typeSymbol = SymbolTable.globals.lookup(typeName);
-		if (typeSymbol == null) {
-			SymbolTable.error(
-					attributeNode.getContext(),
-					attributeNode.getType(),
-					"Class " + ((TypeSymbol)scope).getName() + " has attribute " + attribName
-							+ " with undefined type " + typeName
-			);
-			return null;
-		}
-
-		attributeNode.getIdSymbol().setType((TypeSymbol)typeSymbol);
-
+		var typeSymbol= symbol.getType();
 		var value = attributeNode.getValue();
 		if (value != null) {
-			value.accept(this);
+			var valueType = value.accept(this);
+//			System.out.println("checking that " + typeSymbol.getName() + " inherits " + valueType);
+
+			if (!typeSymbol.inherits(valueType)) {
+				SymbolTable.error(
+						attributeNode.getContext(),
+						attributeNode.getType(),
+						"TODO"
+				);
+			}
 		}
 
-		return null;
+		return typeSymbol;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTLocalVarNode localVarNode) {
+		if (localVarNode.getIdSymbol() == null) {
+			return null;
+		}
+
+		var varName = localVarNode.getName().getText();
+		var varType = localVarNode.getType().getText();
+
+		var varTypeSymbol = SymbolTable.globals.lookup(varType);
+		if (varTypeSymbol == null) {
+			SymbolTable.error(
+					localVarNode.getContext(),
+					localVarNode.getType(),
+					"Let variable " + varName + " has undefined type " + varType
+			);
+			return null;
+		}
+
+		var value = localVarNode.getValue();
+		if (value != null) {
+			var currentScope = scope;
+			scope = scope.getParent();
+			var valueType = value.accept(this);
+			scope = currentScope;
+
+			// TODO: scoate != null cand implementezi expresii
+			if (valueType != null && !valueType.inherits((TypeSymbol)varTypeSymbol)) {
+				SymbolTable.error(
+						localVarNode.getContext(),
+						localVarNode.getType(),
+						"TODO"
+				);
+			}
+		}
+
+		localVarNode.getIdSymbol().setType((TypeSymbol)varTypeSymbol);
+
 		return null;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTIntNode intNode) {
-		return null;
+		return TypeSymbol.INT;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTIdNode idNode) {
-		return null;
+		var idName = idNode.getSymbol();
+
+		var idSymbol = scope.lookup(idName);
+		if (idSymbol == null) {
+			SymbolTable.error(
+					idNode.getContext(),
+					idNode.getContext().getStop(),
+					"Undefined identifier " + idName
+			);
+			return null;
+		}
+
+		return ((IdSymbol)idSymbol).getType();
 	}
 
 	@Override
 	public TypeSymbol visit(ASTBoolNode boolNode) {
-		return null;
+		return TypeSymbol.BOOL;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTStringNode stringNode) {
-		return null;
+		return TypeSymbol.STRING;
 	}
 
 	@Override
@@ -186,7 +217,19 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTNewNode newNode) {
-		return null;
+		var typeName = newNode.getType().getText();
+
+		var type = SymbolTable.globals.lookup(typeName);
+		if (type == null) {
+			SymbolTable.error(
+					newNode.getContext(),
+					newNode.getType(),
+					"Undefined type " + typeName
+			);
+			return null;
+		}
+
+		return (TypeSymbol)type;
 	}
 
 	@Override
@@ -196,12 +239,79 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTBinaryOperatorNode binaryOpNode) {
-		return null;
+		var leftSymb = binaryOpNode.getLeftOp().accept(this);
+		var rightSymb = binaryOpNode.getRightOp().accept(this);
+
+		if (leftSymb == null || rightSymb == null) {
+			if (binaryOpNode instanceof ASTRelOpNode) {
+				return TypeSymbol.BOOL;
+			}
+			return TypeSymbol.INT;
+		}
+
+		var leftName = leftSymb.getName();
+		var rightName = rightSymb.getName();
+
+		if (binaryOpNode.getSymbol().equals("=")) {
+			if (!leftSymb.isEqCompatible(rightSymb)) {
+				SymbolTable.error(
+						binaryOpNode.getContext(),
+						((CoolParser.RelOpContext)binaryOpNode.getContext()).op,
+						"Cannot compare " + leftName + " with " + rightName
+				);
+			}
+		} else {
+			if (leftSymb != TypeSymbol.INT && rightSymb == TypeSymbol.INT) {
+				SymbolTable.error(
+						binaryOpNode.getContext(),
+						binaryOpNode.getContext().start,
+						"Operand of " + binaryOpNode.getSymbol() + " has type " + leftSymb
+								+ " instead of Int"
+				);
+			}
+			if (leftSymb == TypeSymbol.INT && rightSymb != TypeSymbol.INT) {
+				SymbolTable.error(
+						binaryOpNode.getContext(),
+						binaryOpNode.getContext().stop,
+						"Operand of " + binaryOpNode.getSymbol() + " has type " + rightSymb
+								+ " instead of Int"
+				);
+			}
+		}
+
+		return binaryOpNode instanceof ASTRelOpNode ? TypeSymbol.BOOL : TypeSymbol.INT;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTUnaryOperatorNode unaryOpNode) {
-		return null;
+		TypeSymbol opType = unaryOpNode.getOp().accept(this);
+		if (opType == null) {
+			return null;
+		}
+
+		if (unaryOpNode instanceof ASTNegNode && opType != TypeSymbol.INT) {
+			SymbolTable.error(
+					unaryOpNode.getContext(),
+					unaryOpNode.getContext().stop,
+					"Operand of " + unaryOpNode.getSymbol() + " has type " + opType.getName()
+							+ " instead of Int"
+			);
+			return TypeSymbol.INT;
+		}
+		if (unaryOpNode instanceof ASTNotNode && opType != TypeSymbol.BOOL) {
+			SymbolTable.error(
+					unaryOpNode.getContext(),
+					unaryOpNode.getContext().stop,
+					"Operand of " + unaryOpNode.getSymbol() + " has type " + opType.getName()
+							+ " instead of Bool"
+			);
+			return TypeSymbol.BOOL;
+		}
+		if (unaryOpNode instanceof ASTIsVoidNode) {
+			return TypeSymbol.BOOL;
+		}
+
+		return opType;
 	}
 
 	@Override
@@ -216,21 +326,53 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTLetNode letNode) {
+		scope = letNode.getLetSymbol();
+		letNode.getLocals().forEach(local -> local.accept(this));
+		letNode.getBody().accept(this);
+		scope = scope.getParent();
+
 		return null;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTCaseBranchNode caseBranchNode) {
-		return null;
+		var typeName = caseBranchNode.getType().getText();
+		if (typeName.equals("SELF_TYPE")) {
+			return null;
+		}
+
+		// TODO: fa un scope cu  tipu' asta inainte sa te duci pe expresie
+		var caseType = SymbolTable.globals.lookup(typeName);
+		if (caseType == null) {
+			SymbolTable.error(
+					caseBranchNode.getContext(),
+					caseBranchNode.getType(),
+					"Case variable " + caseBranchNode.getId().getText() + " has undefined type " + typeName
+			);
+			return null;
+		}
+
+		return caseBranchNode.getBody().accept(this);
 	}
 
 	@Override
 	public TypeSymbol visit(ASTCaseNode caseNode) {
-		return null;
+		return caseNode
+				.getBranches()
+				.stream()
+				.map(br -> br.accept(this))
+				.filter(Objects::nonNull)
+				.reduce((first, second) -> second).orElse(null);
 	}
 
 	@Override
 	public TypeSymbol visit(ASTBlockNode blockNode) {
+//		return blockNode
+//				.getExpressions()
+//				.stream()
+//				.map(expr -> expr.accept(this))
+//				.filter(Objects::nonNull)
+//				.reduce((first, second) -> second).orElse(null);
 		return null;
 	}
 }

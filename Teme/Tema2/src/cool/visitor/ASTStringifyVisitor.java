@@ -80,11 +80,7 @@ public class ASTStringifyVisitor implements ASTVisitor<String> {
                                .map(this::visit)
                                .collect(Collectors.joining(""));
                str += getIndent() + methodNode.getRetType().getText() + "\n";
-               str += methodNode
-                               .getBody()
-                               .stream()
-                               .map(node -> node.accept(this))
-                               .collect(Collectors.joining(""));
+               str += methodNode.getBody().accept(this);
                indent -= 2;
 
                return str;

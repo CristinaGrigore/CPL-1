@@ -4,6 +4,7 @@ import cool.AST.*;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
+import cool.symbols.LetSymbol;
 import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
 
@@ -131,7 +132,7 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 		scope = methodSymbol;
 		methodNode.getParams().forEach(node -> node.accept(this));
-		methodNode.getBody().forEach(node -> node.accept(this));
+		methodNode.getBody().accept(this);
 		scope = scope.getParent();
 
 		return null;
@@ -172,6 +173,25 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTLocalVarNode localVarNode) {
+		var varName = localVarNode.getName().getText();
+		if (varName.equals("self")) {
+			SymbolTable.error(
+					localVarNode.getContext(),
+					localVarNode.getName(),
+					"Let variable has illegal name " + varName
+			);
+			return null;
+		}
+
+		var varSymb = new IdSymbol(varName);
+		localVarNode.setIdSymbol(varSymb);
+		scope.add(varSymb);
+
+		var value = localVarNode.getValue();
+		if (value != null) {
+			value.accept(this);
+		}
+
 		return null;
 	}
 
@@ -182,6 +202,7 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTIdNode idNode) {
+//		idNode.setIdSymbol(new IdSymbol(idNode.getSymbol()));
 		return null;
 	}
 
@@ -232,16 +253,46 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTLetNode letNode) {
+		letNode.setLetSymbol(new LetSymbol(scope));
+
+		scope = letNode.getLetSymbol();
+		letNode.getLocals().forEach(local -> local.accept(this));
+		letNode.getBody().accept(this);
+		scope = scope.getParent();
+
 		return null;
 	}
 
 	@Override
 	public Void visit(ASTCaseBranchNode caseBranchNode) {
+		var idName = caseBranchNode.getId().getText();
+		if (idName.equals("self")) {
+			SymbolTable.error(
+					caseBranchNode.getContext(),
+					caseBranchNode.getId(),
+					"Case variable has illegal name " + idName
+			);
+			return null;
+		}
+
+		var typeName = caseBranchNode.getType().getText();
+		if (typeName.equals("SELF_TYPE")) {
+			SymbolTable.error(
+					caseBranchNode.getContext(),
+					caseBranchNode.getType(),
+					"Case variable " + idName + " has illegal type " + typeName
+			);
+			return null;
+		}
+
+		caseBranchNode.getBody().accept(this);
+
 		return null;
 	}
 
 	@Override
 	public Void visit(ASTCaseNode caseNode) {
+		caseNode.getBranches().forEach(br -> br.accept(this));
 		return null;
 	}
 

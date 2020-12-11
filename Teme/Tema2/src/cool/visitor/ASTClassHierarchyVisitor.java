@@ -118,6 +118,41 @@ public class ASTClassHierarchyVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTAttributeNode attributeNode) {
+		var symbol = attributeNode.getIdSymbol();
+		if (symbol == null) {
+			return null;
+		}
+
+		var attribName = attributeNode.getName().getText();
+		var typeName = attributeNode.getType().getText();
+
+		var parentScope = scope.getParent();
+		if (parentScope.lookup(attribName) != null) {
+			SymbolTable.error(
+					attributeNode.getContext(),
+					attributeNode.getName(),
+					"Class " + ((TypeSymbol)scope).getName()
+							+ " redefines inherited attribute " + attribName
+			);
+			attributeNode.setIdSymbol(null);
+
+			return null;
+		}
+
+		var typeSymbol = SymbolTable.globals.lookup(typeName);
+		if (typeSymbol == null) {
+			SymbolTable.error(
+					attributeNode.getContext(),
+					attributeNode.getType(),
+					"Class " + ((TypeSymbol)scope).getName() + " has attribute " + attribName
+							+ " with undefined type " + typeName
+			);
+			attributeNode.setIdSymbol(null);
+
+			return null;
+		}
+		attributeNode.getIdSymbol().setType((TypeSymbol)typeSymbol);
+
 		return null;
 	}
 

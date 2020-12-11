@@ -46,17 +46,13 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.stream()
 				.map(node -> (ASTFormalNode)visitFormal(node))
 				.collect(Collectors.toList());
-		var bodyExprList = ctx.body
-				.stream()
-				.map(node -> (ASTExpressionNode)node.accept(this))
-				.collect(Collectors.toList());
 
 		return new ASTMethodNode(
 				ctx,
 				ctx.ID().getSymbol(),
 				ctx.TYPE().getSymbol(),
 				paramsList,
-				bodyExprList
+				(ASTExpressionNode)ctx.body.accept(this)
 		);
 	}
 
