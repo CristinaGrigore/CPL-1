@@ -5,7 +5,6 @@ import cool.parser.CoolParser;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
-import cool.symbols.Symbol;
 import cool.symbols.TypeSymbol;
 
 import java.util.Objects;
@@ -99,7 +98,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var bodyType = methodNode.getBody().accept(this);
 
 		// TODO: scoate != null cand implementezi expresii
-		if (bodyType != null && bodyType != retSymbol) {
+		if (bodyType != null && !bodyType.inherits(retSymbol)) {
 			SymbolTable.error(
 					methodNode.getContext(),
 					body.getContext().start,
@@ -123,13 +122,13 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var value = attributeNode.getValue();
 		if (value != null) {
 			var valueType = value.accept(this);
-//			System.out.println("checking that " + typeSymbol.getName() + " inherits " + valueType);
 
-			if (!typeSymbol.inherits(valueType)) {
+			if (!valueType.inherits(typeSymbol)) {
 				SymbolTable.error(
 						attributeNode.getContext(),
-						attributeNode.getType(),
-						"TODO"
+						value.getContext().start,
+						"Type " + valueType +  " of initialization expression of attribute "  + symbol
+								+ " is incompatible with declared type " + typeSymbol
 				);
 			}
 		}
@@ -158,17 +157,18 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 		var value = localVarNode.getValue();
 		if (value != null) {
-			var currentScope = scope;
-			scope = scope.getParent();
+//			var currentScope = scope;
+//			scope = scope.getParent();
 			var valueType = value.accept(this);
-			scope = currentScope;
+//			scope = currentScope;
 
 			// TODO: scoate != null cand implementezi expresii
 			if (valueType != null && !valueType.inherits((TypeSymbol)varTypeSymbol)) {
 				SymbolTable.error(
 						localVarNode.getContext(),
-						localVarNode.getType(),
-						"TODO"
+						value.getContext().start,
+						"Type " + valueType + " of initialization expression of identifier " + varName
+								+ " is incompatible with declared type " + varTypeSymbol
 				);
 			}
 		}
@@ -212,7 +212,35 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTAssignNode assignNode) {
-		return null;
+		var idName = assignNode.getId().getText();
+		if (idName.equals("self")) {
+			SymbolTable.error(assignNode.getContext(), assignNode.getId(), "Cannot assign to self");
+			return null;
+		}
+
+		var idSymbol = scope.lookup(idName);
+		if (idSymbol == null) {
+			return null;
+		}
+
+		var idType = ((IdSymbol)idSymbol).getType();
+		var value = assignNode.getValue();
+		var exprType = value.accept(this);
+
+		if (idType == null || exprType == null) {
+			return null;
+		}
+
+		if (!exprType.inherits(idType)) {
+			SymbolTable.error(
+					assignNode.getContext(),
+					assignNode.getValue().getContext().start,
+					"Type " + exprType + " of assigned expression is incompatible with declared type "
+							+ idType.getName() + " of identifier " + idName
+			);
+		}
+
+		return idType;
 	}
 
 	@Override
@@ -224,7 +252,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			SymbolTable.error(
 					newNode.getContext(),
 					newNode.getType(),
-					"Undefined type " + typeName
+					"new is used with undefined type " + typeName
 			);
 			return null;
 		}
@@ -234,7 +262,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTDispatchNode dispatchNode) {
-		return null;
+		return TypeSymbol.OBJECT;
 	}
 
 	@Override
@@ -253,7 +281,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var rightName = rightSymb.getName();
 
 		if (binaryOpNode.getSymbol().equals("=")) {
-			if (!leftSymb.isEqCompatible(rightSymb)) {
+			if (TypeSymbol.notEqCompatible(leftSymb, rightSymb)) {
 				SymbolTable.error(
 						binaryOpNode.getContext(),
 						((CoolParser.RelOpContext)binaryOpNode.getContext()).op,
@@ -316,22 +344,53 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTIfNode ifNode) {
-		return null;
+		var condType = ifNode.getCond().accept(this);
+		if (condType != TypeSymbol.BOOL) {
+			SymbolTable.error(
+					ifNode.getContext(),
+					((CoolParser.IfContext)ifNode.getContext()).cond.start,
+					"If condition has type " + condType + " instead of Bool"
+			);
+		}
+
+		return TypeSymbol.getLCA(
+				ifNode.getThenBranch().accept(this),
+				ifNode.getElseBranch().accept(this)
+		);
 	}
 
 	@Override
 	public TypeSymbol visit(ASTWhileNode whileNode) {
-		return null;
+		var condType = whileNode.getCond().accept(this);
+		if (condType != TypeSymbol.BOOL) {
+			SymbolTable.error(
+					whileNode.getContext(),
+					((CoolParser.WhileContext)whileNode.getContext()).cond.start,
+					"While condition has type " + condType + " instead of Bool"
+			);
+		}
+
+		return TypeSymbol.OBJECT;
 	}
 
 	@Override
 	public TypeSymbol visit(ASTLetNode letNode) {
 		scope = letNode.getLetSymbol();
-		letNode.getLocals().forEach(local -> local.accept(this));
-		letNode.getBody().accept(this);
+		IdSymbol localSymbol;
+
+		for (var localVar : letNode.getLocals()) {
+			localVar.accept(this);
+
+			localSymbol = localVar.getIdSymbol();
+			if (localSymbol != null) {
+				scope.add(localSymbol);
+			}
+		}
+
+		var retValue = letNode.getBody().accept(this);
 		scope = scope.getParent();
 
-		return null;
+		return retValue;
 	}
 
 	@Override
@@ -362,17 +421,16 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 				.stream()
 				.map(br -> br.accept(this))
 				.filter(Objects::nonNull)
-				.reduce((first, second) -> second).orElse(null);
+				.reduce(TypeSymbol::getLCA).orElse(null);
 	}
 
 	@Override
 	public TypeSymbol visit(ASTBlockNode blockNode) {
-//		return blockNode
-//				.getExpressions()
-//				.stream()
-//				.map(expr -> expr.accept(this))
-//				.filter(Objects::nonNull)
-//				.reduce((first, second) -> second).orElse(null);
-		return null;
+		return blockNode
+				.getExpressions()
+				.stream()
+				.map(expr -> expr.accept(this))
+				.filter(Objects::nonNull)
+				.reduce((first, second) -> second).orElse(null);
 	}
 }

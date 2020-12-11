@@ -95,6 +95,10 @@ public class ASTClassHierarchyVisitor implements ASTVisitor<Void> {
 
 		var methodName = methodNode.getName().getText();
 		var retType = methodNode.getRetType().getText();
+		if (retType.equals("SELF_TYPE")) {
+			retType = ((TypeSymbol)scope).getName();
+		}
+
 		var classScope = (TypeSymbol)scope;
 
 		var retSymbol = SymbolTable.globals.lookup(retType);
@@ -125,6 +129,9 @@ public class ASTClassHierarchyVisitor implements ASTVisitor<Void> {
 
 		var attribName = attributeNode.getName().getText();
 		var typeName = attributeNode.getType().getText();
+		if (typeName.equals("SELF_TYPE")) {
+			typeName = ((TypeSymbol)scope).getName();
+		}
 
 		var parentScope = scope.getParent();
 		if (parentScope.lookup(attribName) != null) {

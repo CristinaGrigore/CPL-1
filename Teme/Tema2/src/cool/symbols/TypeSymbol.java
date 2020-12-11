@@ -3,6 +3,7 @@ package cool.symbols;
 import cool.scopes.Scope;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol OBJECT = new TypeSymbol("Object", null);
@@ -29,22 +30,42 @@ public class TypeSymbol extends Symbol implements Scope {
 		attributes.put(self.getName(), self);
 	}
 
-	public boolean isEqCompatible(TypeSymbol other) {
-		if (
-				this == INT || this == BOOL || this == STRING
-				|| other == INT || other == BOOL || other == STRING
-		) {
-			return this == other;
+	private static boolean isEqSpecial(TypeSymbol ts) {
+		return ts == INT || ts == BOOL || ts == STRING;
+	}
+
+	public static boolean notEqCompatible(TypeSymbol ts1, TypeSymbol ts2) {
+		if (isEqSpecial(ts1) || isEqSpecial(ts2)) {
+			return ts1 != ts2;
 		}
 
-		return true;
+		return false;
+	}
+
+	public static TypeSymbol getLCA(TypeSymbol ts1, TypeSymbol ts2) {
+		var ancestors = new HashSet<TypeSymbol>();
+
+		while (ts1 != null) {
+			ancestors.add(ts1);
+			ts1 = ts1.parent;
+		}
+
+		while (ts2 != null) {
+			if (ancestors.contains(ts2)) {
+				return ts2;
+			}
+
+			ts2 = ts2.parent;
+		}
+
+		return TypeSymbol.OBJECT;
 	}
 
 	public boolean inherits(TypeSymbol type) {
 		if (this == type) {
 			return true;
 		}
-//
+
 		if (parent != null) {
 			return parent.inherits(type);
 		}

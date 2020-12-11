@@ -185,7 +185,6 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 		var varSymb = new IdSymbol(varName);
 		localVarNode.setIdSymbol(varSymb);
-		scope.add(varSymb);
 
 		var value = localVarNode.getValue();
 		if (value != null) {
@@ -218,6 +217,7 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTAssignNode assignNode) {
+		assignNode.getValue().accept(this);
 		return null;
 	}
 
@@ -298,6 +298,7 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTBlockNode blockNode) {
+		blockNode.getExpressions().forEach(expr -> expr.accept(this));
 		return null;
 	}
 }
