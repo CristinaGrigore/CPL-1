@@ -132,14 +132,10 @@ test/
 *.txt
 
 # ANTLR-generated files
-CPLang*Lexer.java
-CPLang*Listener.java
-CPLang*Parser.java
-CPLang*Visitor.java
-Cool*Lexer.java
-Cool*Listener.java
-Cool*Parser.java
-Cool*Visitor.java
+*Lexer.java
+*Listener.java
+*Parser.java
+*BaseVisitor.java
 *.interp
 *.tokens
 

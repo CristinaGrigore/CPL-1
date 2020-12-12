@@ -2,6 +2,7 @@ package cool.visitor;
 
 import cool.AST.*;
 import cool.parser.CoolParser;
+import cool.scopes.CaseScope;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
@@ -501,7 +502,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			return null;
 		}
 
-		// TODO: fa un scope cu  tipu' asta inainte sa te duci pe expresie
 		var caseType = getActualType(typeName);
 		if (caseType == null) {
 			SymbolTable.error(
@@ -512,7 +512,16 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			return null;
 		}
 
-		return caseBranchNode.getBody().accept(this);
+		var caseScope = new CaseScope(scope);
+		var id = new IdSymbol(caseBranchNode.getSymbol());
+		id.setType(caseType);
+		caseScope.add(id);
+
+		scope = caseScope;
+		var retType = caseBranchNode.getBody().accept(this);
+		scope = caseScope.getParent();
+
+		return retType;
 	}
 
 	@Override
