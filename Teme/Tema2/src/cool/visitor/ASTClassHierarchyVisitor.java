@@ -95,19 +95,18 @@ public class ASTClassHierarchyVisitor implements ASTVisitor<Void> {
 
 		var methodName = methodNode.getName().getText();
 		var retType = methodNode.getRetType().getText();
-		if (retType.equals("SELF_TYPE")) {
-			retType = ((TypeSymbol)scope).getName();
-		}
+//		if (retType.equals("SELF_TYPE")) {
+//			retType = ((TypeSymbol)scope).getName();
+//		}
 
-		var classScope = (TypeSymbol)scope;
+//		var classScope = (TypeSymbol)scope;
 
 		var retSymbol = SymbolTable.globals.lookup(retType);
 		if (retSymbol == null) {
 			SymbolTable.error(
 					methodNode.getContext(),
 					methodNode.getRetType(),
-					"Class " + classScope.getName() + " has method " + methodName
-							+ " with undefined return type " + retType
+					"Class " + scope + " has method " + methodName + " with undefined return type " + retType
 			);
 			return null;
 		}
@@ -129,9 +128,9 @@ public class ASTClassHierarchyVisitor implements ASTVisitor<Void> {
 
 		var attribName = attributeNode.getName().getText();
 		var typeName = attributeNode.getType().getText();
-		if (typeName.equals("SELF_TYPE")) {
-			typeName = ((TypeSymbol)scope).getName();
-		}
+//		if (typeName.equals("SELF_TYPE")) {
+//			typeName = ((TypeSymbol)scope).getName();
+//		}
 
 		var parentScope = scope.getParent();
 		if (parentScope.lookup(attribName) != null) {

@@ -11,6 +11,7 @@ public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol BOOL = new TypeSymbol("Bool", "Object");
 	public static final TypeSymbol STRING = new TypeSymbol("String", "Object");
 	public static final TypeSymbol IO = new TypeSymbol("IO", "Object");
+	public static final TypeSymbol SELF_TYPE = new TypeSymbol("SELF_TYPE", "Object");
 
 	private final HashMap<String, IdSymbol> attributes;
 	private final HashMap<String, MethodSymbol> methods;
@@ -26,7 +27,8 @@ public class TypeSymbol extends Symbol implements Scope {
 		methods = new HashMap<>();
 
 		var self = new IdSymbol("self");
-		self.setType(this);
+		// TODO: inlocuieste cu SELF_TYPE
+		self.setType(SELF_TYPE);
 		attributes.put(self.getName(), self);
 	}
 

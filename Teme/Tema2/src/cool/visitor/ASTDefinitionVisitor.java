@@ -201,7 +201,6 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTIdNode idNode) {
-//		idNode.setIdSymbol(new IdSymbol(idNode.getSymbol()));
 		return null;
 	}
 
