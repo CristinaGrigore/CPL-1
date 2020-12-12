@@ -50,6 +50,21 @@ Se construieste *AST*-ul pentru un snippet in limbajul `CPLang` folosind
 interfata (visitorii) generata de `ANTLR` si se afiseaza acest arbore folosind
 un visitor implementat (aproape) de la 0.
 
+### Laborator 5, 6 - Analiza semantica
+Se atribuie cate un simbol fiecarui nod ce reprezinta o instructiune (apel de
+functie) sau variabila. Aceste simboluri retin tipurile de date ale expresiilor
+carora le-au fost atribuite si sunt folosite pentru a realiza tiparea acestora.
+Se scriu erori la `stderr` in cazul folosirii unor simboluri ce nu sunt definite
+in scope-ul curent sau a folosirii unor operatori (aritmetici sau parametri de
+functie) cu tipuri incompatibile.
+
+### Laborator 7 - Assembly
+Recapitulare *Assembly*, dar de data asta in varianta *MIPS* 🤮. Niste probleme
+chioare si atat. Codul (in afara de bonus) se poate rula in `spim` atfel:
+```bash
+spim -file <fisier.s>
+```
+
 
 ## Teme
 ### Tema 0 - COOL
