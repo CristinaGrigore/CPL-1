@@ -233,21 +233,30 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 
 	@Override
 	public Void visit(ASTBinaryOperatorNode binaryOpNode) {
+		binaryOpNode.getLeftOp().accept(this);
+		binaryOpNode.getRightOp().accept(this);
+
 		return null;
 	}
 
 	@Override
 	public Void visit(ASTUnaryOperatorNode unaryOpNode) {
+		unaryOpNode.getOp().accept(this);
+
 		return null;
 	}
 
 	@Override
 	public Void visit(ASTIfNode ifNode) {
+		ifNode.getThenBranch().accept(this);
+		ifNode.getElseBranch().accept(this);
+
 		return null;
 	}
 
 	@Override
 	public Void visit(ASTWhileNode whileNode) {
+		whileNode.getBody().accept(this);
 		return null;
 	}
 

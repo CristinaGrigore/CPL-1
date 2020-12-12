@@ -6,8 +6,11 @@ import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
 import cool.symbols.TypeSymbol;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 	Scope scope;
@@ -96,8 +99,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		scope = methodSymbol;
 		var body = methodNode.getBody();
 		var bodyType = methodNode.getBody().accept(this);
-
-		// TODO: scoate != null cand implementezi expresii
 		if (bodyType != null && !bodyType.inherits(retSymbol)) {
 			SymbolTable.error(
 					methodNode.getContext(),
@@ -157,12 +158,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 		var value = localVarNode.getValue();
 		if (value != null) {
-//			var currentScope = scope;
-//			scope = scope.getParent();
 			var valueType = value.accept(this);
-//			scope = currentScope;
-
-			// TODO: scoate != null cand implementezi expresii
 			if (valueType != null && !valueType.inherits((TypeSymbol)varTypeSymbol)) {
 				SymbolTable.error(
 						localVarNode.getContext(),
@@ -240,7 +236,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			);
 		}
 
-		return idType;
+		return exprType;
 	}
 
 	@Override
@@ -262,7 +258,95 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 	@Override
 	public TypeSymbol visit(ASTDispatchNode dispatchNode) {
-		return TypeSymbol.OBJECT;
+		var caller = dispatchNode.getCaller();
+		TypeSymbol callerType = caller != null ?
+				caller.accept(this)
+				: ((IdSymbol)scope.lookup("self")).getType();
+
+		var actualObj = dispatchNode.getActualCaller();
+		if (actualObj != null) {
+			var actualTypeName = actualObj.getText();
+			if (actualTypeName.equals("SELF_TYPE")) {
+				SymbolTable.error(
+						dispatchNode.getContext(),
+						dispatchNode.getActualCaller(),
+						"Type of static dispatch cannot be SELF_TYPE"
+				);
+				return TypeSymbol.OBJECT;
+			}
+
+			var actualType = (TypeSymbol)SymbolTable.globals.lookup(actualTypeName);
+			if (actualType == null) {
+				SymbolTable.error(
+						dispatchNode.getContext(),
+						dispatchNode.getActualCaller(),
+						"Type " + actualObj.getText() + " of static dispatch is undefined"
+				);
+				return TypeSymbol.OBJECT;
+			}
+
+			if (!callerType.inherits(actualType)) {
+				SymbolTable.error(
+						dispatchNode.getContext(),
+						dispatchNode.getActualCaller(),
+						"Type " + actualType + " of static dispatch is not a superclass of type " + callerType
+				);
+				return TypeSymbol.OBJECT;
+			}
+
+			callerType = actualType;
+		}
+
+		var methodName = dispatchNode.getCallee().getText();
+		var methodSymb = callerType.lookupMethod(methodName);
+		if (methodSymb == null) {
+			SymbolTable.error(
+					dispatchNode.getContext(),
+					dispatchNode.getCallee(),
+					"Undefined method " + methodName + " in class " + callerType
+			);
+			return TypeSymbol.OBJECT;
+		}
+
+		var actualTypes = dispatchNode
+				.getParams()
+				.stream()
+				.map(expr -> expr.accept(this))
+				.collect(Collectors.toList());
+		var formalIds = methodSymb.getFormals();
+		if (actualTypes.size() != formalIds.size()) {
+			SymbolTable.error(
+					dispatchNode.getContext(),
+					dispatchNode.getCallee(),
+					"Method " + methodName + " of class " + callerType
+							+ " is applied to wrong number of arguments"
+			);
+			return TypeSymbol.OBJECT;
+		}
+
+
+
+		for (int i = 0; i != actualTypes.size(); ++i) {
+			if (!actualTypes.get(i).inherits(formalIds.get(i).getType())) {
+				SymbolTable.error(
+						dispatchNode.getContext(),
+						getToken(dispatchNode.getContext(), i),
+						"In call to method " + methodName + " of class " + callerType + ", actual type "
+								+ actualTypes.get(i) + " of formal parameter " + formalIds.get(i)
+								+ " is incompatible with declared type " + formalIds.get(i).getType()
+				);
+			}
+		}
+
+		return methodSymb.getReturnType();
+	}
+
+	private Token getToken(ParserRuleContext context, int idx) {
+		if (context instanceof CoolParser.ImplicitDispatchContext) {
+			return ((CoolParser.ImplicitDispatchContext)context).params.get(idx).start;
+		} else {
+			return ((CoolParser.ExplicitDispatchContext)context).params.get(idx).start;
+		}
 	}
 
 	@Override
