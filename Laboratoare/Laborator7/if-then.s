@@ -13,7 +13,7 @@ main:
 	lw		$a0, N
 	li		$a1, 64
 
-	ble		$a0, $a1, else
+	ble		$a0, $a1, exit
 
 	la		$a0, large
 	li		$v0, 4

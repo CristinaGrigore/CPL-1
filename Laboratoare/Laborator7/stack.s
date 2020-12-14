@@ -16,17 +16,17 @@ put_on_stack:
 
 	blt		$sp, $a2, put_on_stack
 
-	addi	$a2, $a2, 4
+	addi	$sp, $sp, 4
 print_from_stack:
-	lw		$a0, 0($a2)
+	lw		$a0, 0($sp)
 	li		$v0, 1
 	syscall
 	la		$a0, newline
 	li		$v0, 4
 	syscall
 
-	addi	$a2, $a2, 4
-	ble		$a2, $a3, print_from_stack
+	addi	$sp, $sp, 4
+	ble		$sp, $a3, print_from_stack
 
 exit:
 	li		$v0, 10
