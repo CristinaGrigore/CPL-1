@@ -1,0 +1,24 @@
+/* Task 1 */
+1.1;
+-4;
+
+/* Task 2 */
+1 + 2 + 3;
+5.0 + 6.0;
+2 * 2;
+84 / 2;
+
+/* Task 3 */
+if true then 5 else 7 fi;
+if false then 7 else 5 fi;
+
+/* Task 4 */
+myfunc(1,2,3,4,5);
+Int myvar = 5;
+Int myvar2;
+
+/* Task 5 */
+Int myfunc(Int a, Int b, Int c, Int d, Int e){ 4 };
+myvar2 = myvar;
+Int avg(Int a, Int b) { (a + b) / 2 };
+avg(myvar, myvar2);

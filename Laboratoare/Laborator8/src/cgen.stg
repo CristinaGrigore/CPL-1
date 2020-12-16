@@ -1,0 +1,92 @@
+sequence(e) ::= "<e; separator=\"\n\">"
+sequenceSpaced(e) ::= "<e; separator=\"\n\n\">"
+
+program(data, textFuncs, textMain) ::= <<
+.data
+<data>
+
+.text
+<textFuncs>
+
+main:
+<textMain>
+	li $v0, 10	
+	syscall		#exit
+>>
+
+literal(value) ::= <<
+	li $a0 <value>
+>>
+
+floatLiteral(value) ::= <<
+	li.s $f0 <value>
+>>
+
+neg(expr) ::= <<
+<expr>
+	neg $a0 $a0
+>>
+
+floatNeg(expr) ::= <<
+<expr>
+	mul.s $f0 $f0 -1.0
+>>
+
+binaryOp(e1, e2, dStr, op) ::= <<
+<e1>
+	sw $a0 0($sp)
+	addiu $sp $sp -4
+<e2>
+	lw $t1 4($sp)
+	<op> $a0 $t1 $a0
+	addiu $sp $sp 4		<if(dStr)># <dStr><else><endif>
+>>
+
+if(e1, e2, e3, l_skip, l_else) ::= <<
+<e1>
+	beq $a0 0 <l_else>
+<e2>
+	b <l_skip>
+<l_else>:
+<e3>
+<l_skip>:
+>>
+
+assign(name, value) ::= <<
+<value>
+	sw <name> $a0
+>>
+
+varDef(name, type, value) ::= <<
+<name>: .<type> <value>
+>>
+
+id(name) ::= <<
+	lw $a0 <name>
+>>
+
+call(f, params) ::= <<
+	sw $fp, 0($sp)
+	addiu $sp $sp -4
+<params>
+    jal <f>
+>>
+
+funcDef(name, params, body, offset) ::= <<
+<name>:
+	move $fp $sp
+	sw $ra 0($sp)
+	addiu $sp $sp -4
+<body>
+	lw $ra 4($sp)
+	addiu $sp $sp <offset>
+	lw $fp 0($sp)
+	jr $ra
+>>
+
+callParam(expr) ::= <<
+<expr>
+	sw $a0 0($sp)
+	addiu $sp $sp -4
+
+>>
