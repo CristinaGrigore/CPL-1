@@ -20,8 +20,11 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 
     @Override
     public ST visit(Int val) {
-        return templates.getInstanceOf("literal")
-                .add("value", val.getToken().getText());
+	    var value = Integer.parseInt(val.getToken().getText());
+
+	    return templates.getInstanceOf("literal")
+			    .add("hi", value >> 16)
+			    .add("lo", value & 0x0000ffff);
     }
     
     @Override
@@ -33,7 +36,9 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
     @Override
     public ST visit(Bool val) {
     	var value = val.getToken().getText().equals("true") ? "1" : "0";
-        return templates.getInstanceOf("literal").add("value", value);
+        return templates.getInstanceOf("literal")
+		        .add("hi", 0)
+		        .add("lo", value);
     }
     
     /* 
@@ -179,10 +184,7 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 		// TODO 5: generare cod pentru funcSection. Fără cod în main()!
 		var params = funcDef.formals
 				.stream()
-				.map(formal -> {
-					formal.id.getSymbol().setFormal();
-					return formal.accept(this);
-				})
+				.map(formal -> formal.accept(this))
 				.collect(Collectors.toList());
 		Collections.reverse(params);
 		var st = templates.getInstanceOf("funcDef")
@@ -203,12 +205,11 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 	@Override
 	public ST visit(Id id) {
 		// TODO 5
-		var st = templates.getInstanceOf("id");
-
-		if (id.getSymbol().isGlobal()) {
-			return st.add("name", id.getSymbol().getName());
+		if (id.getSymbol().isFormal()) {
+			return templates.getInstanceOf("localVar").add("offset", id.getSymbol().getOffset());
 		}
-		return st;
+
+		return templates.getInstanceOf("id").add("name", id.getSymbol().getName());
 	}
 
 	@Override

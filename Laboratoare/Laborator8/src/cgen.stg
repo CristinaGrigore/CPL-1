@@ -14,8 +14,10 @@ main:
 	syscall		#exit
 >>
 
-literal(value) ::= <<
-	li $a0 <value>
+literal(hi, lo) ::= <<
+	li $a0 <hi>
+	sll $a0
+	ori $a0 $a0 <lo>
 >>
 
 floatLiteral(value) ::= <<
@@ -89,4 +91,8 @@ callParam(expr) ::= <<
 	sw $a0 0($sp)
 	addiu $sp $sp -4
 
+>>
+
+localVar(offset) ::= <<
+	lw $a0, <offset>($fp)
 >>

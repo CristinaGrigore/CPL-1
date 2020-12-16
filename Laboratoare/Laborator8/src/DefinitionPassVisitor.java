@@ -55,9 +55,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
         // Atașăm simbolul nodului din arbore.
         id.setSymbol(symbol);
-        
-        // TODO 1: Reținem informația de tip în simbolul nou creat.
-        
+
         // Căutăm tipul variabilei.
         var typeSymbol = (TypeSymbol)currentScope.lookup(type.getToken().getText());
         
@@ -88,7 +86,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         //
         // Nu uitați să updatati scope-ul curent înainte să fie parcurs corpul funcției,
         // și să îl restaurati la loc după ce acesta a fost parcurs.
-        var id   = funcDef.id;
+        var id = funcDef.id;
         var type = funcDef.type;
         
         var functionSymbol = new FunctionSymbol(currentScope, id.getToken().getText());
@@ -118,9 +116,14 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         
         // Reținem informația de tip în cadrul simbolului aferent funcției.
         functionSymbol.setType(typeSymbol);
+        int i = 4;
         
         for (var formal: funcDef.formals) {
             formal.accept(this);
+
+            formal.id.getSymbol().setFormal();
+            formal.id.getSymbol().setOffset(i);
+            i += 4;
         }
 
         funcDef.body.accept(this);
