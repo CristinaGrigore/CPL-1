@@ -61,3 +61,7 @@ Se implementeaza un parser ce foloseste patternul *Visitor*, ca in
 [demo-ul de la curs](https://github.com/teodutu/CPL/tree/main/DemoCurs/Analiza).
 Se afiseaza arborele de expresie care rezulta din parsarea codului din fisierul
 de input.
+
+### Tema 2 - Analiza semantica
+Se continua implementarea parserului de la Tema1 pentru a verifica si daca
+tipurile de date folosite in program respecta specificatiile limbajului.
