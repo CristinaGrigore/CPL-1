@@ -138,3 +138,6 @@ test/
 *BaseVisitor.java
 *.interp
 *.tokens
+
+# Ouptut files
+*.out
