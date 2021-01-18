@@ -16,7 +16,7 @@ main:
 
 literal(hi, lo) ::= <<
 	li $a0 <hi>
-	sll $a0
+	sll $a0, $a0, 16
 	ori $a0 $a0 <lo>
 >>
 
@@ -56,7 +56,7 @@ if(e1, e2, e3, l_skip, l_else) ::= <<
 
 assign(name, value) ::= <<
 <value>
-	sw <name> $a0
+	sw $a0 <name>
 >>
 
 varDef(name, type, value) ::= <<

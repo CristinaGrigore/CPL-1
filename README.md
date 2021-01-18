@@ -65,6 +65,11 @@ chioare si atat. Codul (in afara de bonus) se poate rula in `spim` atfel:
 spim -file <fisier.s>
 ```
 
+### Laborator 8, 9 - Generare de cod
+Se implementeaza un nou `Visior`, care, pe baza adnotarilor facute in laburile
+anterioare si a snippeturilor din fisierul `cgen.stg`, va genera codul
+*Assembly* echivalent cu programul dat ca intrare, scris in *CPLang*.
+
 
 ## Teme
 ### Tema 0 - COOL

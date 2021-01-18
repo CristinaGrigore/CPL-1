@@ -9,15 +9,14 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 	static STGroupFile templates = new STGroupFile("cgen.stg");
 	static long CNT = 1;
 	
-	ST mainSection;	// filled directly (through visitor returns)
-	ST dataSection; // filled collaterally ("global" access)
-	ST funcSection; // filled collaterally ("global" access)
+	ST mainSection;	 // filled directly (through visitor returns)
+	ST dataSection;  // filled collaterally ("global" access)
+	ST funcSection;  // filled collaterally ("global" access)
 
 	/* 
 	 * Plain numbers
 	 * TODO 1:
 	 */
-
     @Override
     public ST visit(Int val) {
 	    var value = Integer.parseInt(val.getToken().getText());
@@ -45,7 +44,6 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
      * Unary operations
      * TODO 1:
      */
-    
 	@Override
 	public ST visit(UnaryMinus uMinus) {
 		var expr = uMinus.expr.accept(this);
@@ -61,7 +59,6 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 	 * Binary operations
 	 * TODO 2:
 	 */
-    
     @Override
     public ST visit(Plus expr) {
     	return templates.getInstanceOf("binaryOp")
@@ -117,7 +114,6 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
      * Control structures
      * TODO 3:
      */
-    
     @Override
 	public ST visit(If iff) {
 		return templates.getInstanceOf("if")
@@ -145,7 +141,6 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
      * Definitions & assignments
      * TODO 4&5:
      */
-
 	@Override
 	public ST visit(Assign assign) {
 		// TODO 4: generare cod pentru main()
@@ -201,7 +196,6 @@ public class CodeGenVisitor implements ASTVisitor<ST>{
 	/*
 	 * META
 	 */
-	
 	@Override
 	public ST visit(Id id) {
 		// TODO 5

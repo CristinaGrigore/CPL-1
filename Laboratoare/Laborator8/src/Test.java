@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.antlr.v4.runtime.*;
 
@@ -41,7 +43,7 @@ public class Test {
         // Generarea de cod
         var codeGenVisitor = new CodeGenVisitor();
         var t = ast.accept(codeGenVisitor);
-        System.out.println(t.render());
+        Files.writeString(Path.of("program.S"), t.render());
     }
 
 
