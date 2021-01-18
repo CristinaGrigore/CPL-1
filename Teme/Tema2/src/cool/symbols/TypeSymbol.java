@@ -27,7 +27,6 @@ public class TypeSymbol extends Symbol implements Scope {
 		methods = new HashMap<>();
 
 		var self = new IdSymbol("self");
-		// TODO: inlocuieste cu SELF_TYPE
 		self.setType(SELF_TYPE);
 		attributes.put(self.getName(), self);
 	}

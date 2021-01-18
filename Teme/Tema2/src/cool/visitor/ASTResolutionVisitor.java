@@ -49,7 +49,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var methodName = methodNode.getName().getText();
 		var classScope = (TypeSymbol)scope;
 		var retRawType = methodSymbol.getReturnType();
-//		var retType = getActualType(retRawType.getName());
 
 		var overriddenMethod = ((TypeSymbol)classScope.getParent()).lookupMethod(methodName);
 		if (overriddenMethod != null) {
@@ -239,7 +238,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		}
 
 		var exprType = getActualType(exprRawType.getName());
-
 		if (!exprType.inherits(idType)) {
 			SymbolTable.error(
 					assignNode.getContext(),
