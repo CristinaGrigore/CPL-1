@@ -1,0 +1,75 @@
+sequence(e) ::= "<e; separator=\"\n\">"
+sequenceSpaced(e) ::= "<e; separator=\"\n\n\">"
+
+program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
+.data
+    .align  2
+    .globl  class_nameTab
+    .globl  Int_protObj
+    .globl  String_protObj
+    .globl  bool_const0
+    .globl  bool_const1
+    .globl  Main_protObj
+    .globl  _int_tag
+    .globl  _string_tag
+    .globl  _bool_tag
+<consts>
+
+class_nameTab:
+<classNames>
+
+class_objTab:
+<classObjs>
+
+<protObjs>
+
+<dispTables>
+
+heap_start:
+    .word   0
+
+
+.text
+    .globl  Int_init
+    .globl  String_init
+    .globl  Bool_init
+    .globl  Main_init
+    .globl  Main.main
+<methods>
+>>
+
+initMethod(class, parent, attrib) ::= <<
+<class>_init:
+	addiu   $sp $sp -12
+	sw      $fp 12($sp)
+	sw      $s0 8($sp)
+	sw      $ra 4($sp)
+	addiu   $fp $sp 4
+	move    $s0 $a0
+<if (parent)>
+	jal     <parent>_init
+<endif>
+<if (attrib)>
+<attributes>
+<endif>
+	move    $a0 $s0
+	lw      $fp 12($sp)
+	lw      $s0 8($sp)
+	lw      $ra 4($sp)
+	addiu   $sp $sp 12
+	jr      $ra
+>>
+
+protObj(class) ::= <<
+	.word   <class>_protObj
+	.word   <class>_init
+>>
+
+dispTableEntry(method) ::= <<
+	.word   <method>
+>>
+
+dispatchTable(class, methods) ::= <<
+<class>_dispTab:
+<methods>
+>>

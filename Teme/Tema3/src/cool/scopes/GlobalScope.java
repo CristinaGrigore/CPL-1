@@ -19,6 +19,10 @@ public class GlobalScope implements Scope {
         return true;
     }
 
+    public HashMap<String, Symbol> getSymbols() {
+        return symbols;
+    }
+
     @Override
     public Symbol lookup(String name) {
         return symbols.get(name);

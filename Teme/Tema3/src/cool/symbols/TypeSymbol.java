@@ -1,9 +1,14 @@
 package cool.symbols;
 
 import cool.scopes.Scope;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroupFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol OBJECT = new TypeSymbol("Object", null);
@@ -13,15 +18,19 @@ public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol IO = new TypeSymbol("IO", "Object");
 	public static final TypeSymbol SELF_TYPE = new TypeSymbol("SELF_TYPE", "Object");
 
+	// TODO: pune tag conform ierarhiei de clase
+	private static int tagCounter = 0;
+
 	private final HashMap<String, IdSymbol> attributes;
 	private final HashMap<String, MethodSymbol> methods;
 	private TypeSymbol parent;
 	private final String parentName;
+	private final int tag;
 
 	public TypeSymbol(String name, String parentName) {
 		super(name);
-
 		this.parentName = parentName;
+		tag = tagCounter++;
 
 		attributes = new HashMap<>();
 		methods = new HashMap<>();
@@ -29,6 +38,52 @@ public class TypeSymbol extends Symbol implements Scope {
 		var self = new IdSymbol("self");
 		self.setType(SELF_TYPE);
 		attributes.put(self.getName(), self);
+	}
+
+	public int getTag() {
+		return tag;
+	}
+
+	private List<String> getDispTabMethods() {
+		var className = getName();
+		var currentMethods = methods.keySet();
+		List<String> dispTabMethods;
+
+		// TODO: salveaza offsetul metodei in MethodSymbol
+		if (parent != null) {
+			var parentMethods = parent.getDispTabMethods();
+			dispTabMethods = parentMethods.stream().map(method -> {
+				var methodName = method.substring(method.lastIndexOf(".") + 1);
+
+				if (currentMethods.contains(methodName)) {
+					currentMethods.remove(methodName);
+					return className + "." + methodName;
+				}
+				return method;
+			}).collect(Collectors.toList());
+		} else {
+			dispTabMethods = new ArrayList<>();
+		}
+
+		dispTabMethods.addAll(
+				currentMethods.stream().map(method -> className + "." + method).collect(Collectors.toList())
+		);
+
+		return dispTabMethods;
+	}
+
+	public ST getDispTable(STGroupFile templates) {
+		var dispTable = templates.getInstanceOf("sequence");
+		getDispTabMethods().forEach(method -> dispTable.add(
+				"e",
+				templates
+						.getInstanceOf("dispTableEntry")
+						.add("method", method)
+		));
+
+		return templates.getInstanceOf("dispatchTable")
+				.add("class", getName())
+				.add("methods", dispTable);
 	}
 
 	private static boolean isEqSpecial(TypeSymbol ts) {
@@ -63,13 +118,11 @@ public class TypeSymbol extends Symbol implements Scope {
 	}
 
 	public boolean inherits(TypeSymbol type) {
-//		System.out.println(type.getName() + " vs " + this);
 		if (this == type) {
 			return true;
 		}
 
 		if (parent != null) {
-//			System.out.println("Parent = " + parent.getName());
 			return parent.inherits(type);
 		}
 

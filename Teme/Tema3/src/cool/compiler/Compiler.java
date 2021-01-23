@@ -1,9 +1,6 @@
 package cool.compiler;
 
-import cool.visitor.ASTConstructionVisitor;
-import cool.visitor.ASTDefinitionVisitor;
-import cool.visitor.ASTClassHierarchyVisitor;
-import cool.visitor.ASTResolutionVisitor;
+import cool.visitor.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -131,7 +128,6 @@ public class Compiler {
         // Populate global scope.
         SymbolTable.defineBasicClasses();
         
-        // TODO Semantic analysis
         ast.accept(new ASTDefinitionVisitor());
         ast.accept(new ASTClassHierarchyVisitor());
         ast.accept(new ASTResolutionVisitor());
@@ -139,5 +135,8 @@ public class Compiler {
         if (SymbolTable.hasSemanticErrors()) {
             System.err.println("Compilation halted");
         }
+
+        var codeGen = new CodeGenVisitor();
+        System.out.println(ast.accept(codeGen).render());
     }
 }
