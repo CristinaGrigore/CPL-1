@@ -7,8 +7,8 @@ program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
     .globl  class_nameTab
     .globl  Int_protObj
     .globl  String_protObj
-    .globl  bool_const_False
-    .globl  bool_const_True
+    .globl  bool_const_false
+    .globl  bool_const_true
     .globl  Main_protObj
     .globl  _int_tag
     .globl  _string_tag
@@ -21,12 +21,12 @@ _string_tag:
 _bool_tag:
     .word   2
 
-bool_const_False:
+bool_const_false:
     .word   4
     .word   4
     .word   Bool_dispTab
     .word   0
-bool_const_True:
+bool_const_true:
     .word   4
     .word   4
     .word   Bool_dispTab
@@ -113,7 +113,7 @@ str_const_<str>:
 	.word	3
 	.word	<wordCount>
 	.word	String_dispTab
-	.word	int_const_<len>
+	.word	<len>
 	.asciiz	"<str>"
 	.align	2
 >>
@@ -127,10 +127,26 @@ method(class, name, body) ::= <<
 	addiu   $fp $sp 4
 	move    $s0 $a0
 <body>
-	move    $a0 $s0
 	lw      $fp 12($sp)
 	lw      $s0 8($sp)
 	lw      $ra 4($sp)
 	addiu   $sp $sp 12
 	jr      $ra
+>>
+
+literal(addr) ::= <<
+	la		$a0 <addr>
+>>
+
+// TODO: dispatch explicit + cu @
+dispatch(method, idx, filename, line, offset)  ::= <<
+	move    $a0 $s0
+	bnez    $a0 dispatch_<method>_<idx>
+	la      $a0 <filename>
+	li      $t1 <line>
+	jal     _dispatch_abort
+dispatch_<method>_<idx>:
+	lw      $t1 8($a0)
+    lw      $t1 <offset>($t1)
+    jalr    $t1
 >>

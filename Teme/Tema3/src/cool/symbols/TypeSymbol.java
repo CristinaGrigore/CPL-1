@@ -19,13 +19,14 @@ public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol SELF_TYPE = new TypeSymbol("SELF_TYPE", "Object");
 
 	// TODO: pune tag conform ierarhiei de clase
-	private static int tagCounter = 0;
+	public static int tagCounter = 0;
 
 	private final HashMap<String, IdSymbol> attributes;
 	private final HashMap<String, MethodSymbol> methods;
 	private TypeSymbol parent;
 	private final String parentName;
 	private final int tag;
+	private int numMethods;
 
 	public TypeSymbol(String name, String parentName) {
 		super(name);
@@ -38,6 +39,15 @@ public class TypeSymbol extends Symbol implements Scope {
 		var self = new IdSymbol("self");
 		self.setType(SELF_TYPE);
 		attributes.put(self.getName(), self);
+	}
+
+	public int getTotalNumMethods() {
+		int totalMethods = numMethods;
+		if (parent != null) {
+			totalMethods += parent.getTotalNumMethods();
+		}
+
+		return totalMethods;
 	}
 
 	private List<String> getDispTabMethods() {
@@ -204,6 +214,10 @@ public class TypeSymbol extends Symbol implements Scope {
 		}
 
 		methods.put(symbolName, symbol);
+
+		if (parent != null && parent.lookupMethod(symbolName) == null) {
+			++numMethods;
+		}
 
 		return true;
 	}

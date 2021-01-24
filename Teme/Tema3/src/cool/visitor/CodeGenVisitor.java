@@ -1,16 +1,21 @@
 package cool.visitor;
 
 import cool.AST.*;
+import cool.compiler.Compiler;
+import cool.parser.CoolParser;
+import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.TypeSymbol;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final STGroupFile templates;
-	private long ifCount;
+	private long cnt;
+	Scope scope;
 
 	private final ST constants;
 	private final ST classNames;
@@ -22,22 +27,40 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final HashMap<String, ST> strings;
 	private final HashMap<Integer, ST> ints;
 
+	private String addString(String s) {
+		String updated = s.replace("-", "_");
+
+		if (!strings.containsKey(updated)) {
+			int len = updated.length();
+			ST st = templates.getInstanceOf("stringConst")
+					.add("str", updated)
+					.add("len", addInt(len))
+					.add("wordCount", (len + 1) / 4 + 5);
+
+			strings.put(updated, st);
+		}
+
+		return "str_const_" + updated;
+	}
+
+	private String addInt(int n) {
+		if (!ints.containsKey(n)) {
+			ints.put(n, templates.getInstanceOf("intConst").add("val", n));
+		}
+
+		return "int_const_" + n;
+	}
+
 	public CodeGenVisitor() {
 		templates = new STGroupFile("cgen.stg");
 		strings = new HashMap<>();
 		ints = new HashMap<>();
-		ifCount = 0;
+		cnt = 0;
 
-		var intZero = templates.getInstanceOf("intConst").add("val", 0);
-		ints.put(0, intZero);
-		strings.put(
-				"",
-				templates.getInstanceOf("stringConst")
-						.add("str", "")
-						.add("len", 0)
-						.add("wordCount", 5)
-		);
+		addInt(0);
+		addString("");
 
+		constants = templates.getInstanceOf("sequence");
 		classNames = templates.getInstanceOf("sequence");
 		classObjs = templates.getInstanceOf("sequence");
 		dispTables = templates.getInstanceOf("sequence");
@@ -47,39 +70,22 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		SymbolTable.globals.getSymbols().values().forEach(clss -> {
 			if (clss != TypeSymbol.SELF_TYPE) {
 				var className = clss.getName();
-
 				dispTables.add("e", ((TypeSymbol)clss).getDispTable(templates));
 				classObjs.add("e", templates.getInstanceOf("objTabEntry").add("class", clss));
-				classNames.add("e", "\t.word\tstr_const_" + clss);
+				classNames.add("e", "\t.word\t" + addString(className));
 				methods.add("e", ((TypeSymbol)clss).getInitMethod(templates));
-
-				var classNameLen = className.length();
-				if (!ints.containsKey(classNameLen)) {
-					ints.put(
-							classNameLen,
-							templates.getInstanceOf("intConst").add("val", classNameLen)
-					);
-				}
-				strings.put(
-						className,
-						templates.getInstanceOf("stringConst")
-								.add("str", className)
-								.add("len", classNameLen)
-								.add("wordCount", (classNameLen + 1) / 4 + 5)
-				);
-
 				protObjs.add("e", ((TypeSymbol)clss).getProtObj(templates));
+				addInt(className.length());
 			}
 		});
-
-		constants = templates.getInstanceOf("sequence");
-		ints.values().forEach(ct -> constants.add("e", ct));
-		strings.values().forEach(ct -> constants.add("e", ct));
 	}
 
 	@Override
 	public ST visit(ASTProgramNode programNode) {
 		programNode.getClasses().forEach(this::visit);
+
+		ints.values().forEach(ct -> constants.add("e", ct));
+		strings.values().forEach(ct -> constants.add("e", ct));
 
 		ST program = templates.getInstanceOf("program");
 		program.add("consts", constants);
@@ -94,6 +100,7 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTClassNode classNode) {
+		scope = classNode.getType();
 		classNode.getContent().forEach(content -> {
 			if (content instanceof ASTMethodNode) {
 				var methodST = content.accept(this)
@@ -111,6 +118,7 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTMethodNode methodNode) {
+		scope = methodNode.getMethodSymbol();
 		return templates.getInstanceOf("method")
 				.add("name", methodNode.getMethodSymbol())
 				.add("body", methodNode.getBody().accept(this));
@@ -128,7 +136,8 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTIntNode intNode) {
-		return null;
+		return templates.getInstanceOf("literal")
+				.add("addr", addInt(Integer.parseInt(intNode.getSymbol())));
 	}
 
 	@Override
@@ -138,12 +147,14 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTBoolNode boolNode) {
-		return null;
+		return templates.getInstanceOf("literal")
+				.add("addr", "bool_const_" + boolNode.getSymbol());
 	}
 
 	@Override
 	public ST visit(ASTStringNode stringNode) {
-		return null;
+		return templates.getInstanceOf("literal")
+				.add("addr", addString(stringNode.getSymbol()));
 	}
 
 	@Override
@@ -158,7 +169,23 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTDispatchNode dispatchNode) {
-		return null;
+		// TODO: dispatch explicit + cu @
+
+		var method = dispatchNode.getCallee().getText();
+		int offset = ((TypeSymbol)scope.getParent()).lookupMethod(method).getOffset();
+
+		var ctx = dispatchNode.getContext();
+		while (!(ctx.getParent() instanceof CoolParser.ProgramContext)) {
+			ctx = ctx.getParent();
+		}
+		var fileName = new File(Compiler.fileNames.get(ctx)).getName();
+
+		return templates.getInstanceOf("dispatch")
+				.add("method", method)
+				.add("idx", cnt++)
+				.add("offset", offset)
+				.add("filename", addString(fileName))
+				.add("line", dispatchNode.getCallee().getLine());
 	}
 
 	@Override

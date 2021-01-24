@@ -6,6 +6,7 @@ import cool.scopes.CaseScope;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
+import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -31,6 +32,18 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		scope = classNode.getType();
 		classNode.getContent().forEach(node -> node.accept(this));
 
+		int i = classNode.getType().getTotalNumMethods();
+		// TODO: fa cam la fel pt offseturile atirbutelor (cred)
+		for (var node : classNode.getContent()) {
+			if (node instanceof ASTMethodNode) {
+				var methodSymbol = ((ASTMethodNode)node).getMethodSymbol();
+				if (methodSymbol.getOverriddenMethod() == null) {
+					methodSymbol.setOffset(i);
+					i += 4;
+				}
+			}
+		}
+
 		return null;
 	}
 
@@ -52,6 +65,8 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 		var overriddenMethod = ((TypeSymbol)classScope.getParent()).lookupMethod(methodName);
 		if (overriddenMethod != null) {
+			methodSymbol.setOverriddenMethod(overriddenMethod);
+
 			var overriddenType = overriddenMethod.getReturnType();
 			if (retRawType != overriddenType) {
 				SymbolTable.error(
@@ -339,7 +354,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		}
 
 		for (int i = 0; i != actualTypes.size(); ++i) {
-			System.out.println("");
 			if (!actualTypes.get(i).inherits(formalIds.get(i).getType())) {
 				SymbolTable.error(
 						dispatchNode.getContext(),

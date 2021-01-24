@@ -7,12 +7,13 @@ import java.util.LinkedHashMap;
 
 public class MethodSymbol extends Symbol implements Scope {
 	private final LinkedHashMap<String, IdSymbol> formals;
+	private int offset;
+	private MethodSymbol overriddenMethod;
 	private TypeSymbol parent;
 	private TypeSymbol returnType;
 
 	public MethodSymbol(String name) {
 		super(name);
-
 		formals = new LinkedHashMap<>();
 	}
 
@@ -30,6 +31,22 @@ public class MethodSymbol extends Symbol implements Scope {
 
 	public void setReturnType(TypeSymbol returnType) {
 		this.returnType = returnType;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public MethodSymbol getOverriddenMethod() {
+		return overriddenMethod;
+	}
+
+	public void setOverriddenMethod(MethodSymbol overriddenMethod) {
+		this.overriddenMethod = overriddenMethod;
 	}
 
 	@Override
