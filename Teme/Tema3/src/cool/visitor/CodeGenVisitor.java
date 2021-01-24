@@ -6,61 +6,101 @@ import cool.symbols.TypeSymbol;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
+import java.util.HashMap;
+
 public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final STGroupFile templates;
 	private long ifCount;
 
-	private ST consts;
+	private final ST constants;
 	private final ST classNames;
 	private final ST classObjs;
-	private ST protObjs;
-	private ST dispTables;
-	private ST methods;
+	private final ST protObjs;
+	private final ST dispTables;
+	private final ST methods;
+
+	private final HashMap<String, ST> strings;
+	private final HashMap<Integer, ST> ints;
 
 	public CodeGenVisitor() {
 		templates = new STGroupFile("cgen.stg");
-		ifCount = 1;
+		strings = new HashMap<>();
+		ints = new HashMap<>();
+		ifCount = 0;
+
+		var intZero = templates.getInstanceOf("intConst").add("val", 0);
+		ints.put(0, intZero);
+		strings.put(
+				"",
+				templates.getInstanceOf("stringConst")
+						.add("str", "")
+						.add("len", 0)
+						.add("wordCount", 5)
+		);
 
 		classNames = templates.getInstanceOf("sequence");
-		classNames.add("e", "\t.word str_const_CLASS_Object");
-		classNames.add("e", "\t.word str_const_CLASS_Int");
-		classNames.add("e", "\t.word str_const_CLASS_String");
-		classNames.add("e", "\t.word str_const_CLASS_Bool");
-		classNames.add("e", "\t.word str_const_CLASS_IO");
-
 		classObjs = templates.getInstanceOf("sequence");
-		classObjs.add("e", templates.getInstanceOf("protObj").add("class", "Object"));
-		classObjs.add("e", templates.getInstanceOf("protObj").add("class", "Int"));
-		classObjs.add("e", templates.getInstanceOf("protObj").add("class", "String"));
-		classObjs.add("e", templates.getInstanceOf("protObj").add("class", "Bool"));
-		classObjs.add("e", templates.getInstanceOf("protObj").add("class", "IO"));
-
 		dispTables = templates.getInstanceOf("sequence");
-		SymbolTable.globals.getSymbols()
-				.values()
-				.forEach(clss -> {
-							if (clss != TypeSymbol.SELF_TYPE) {
-								dispTables.add("e", ((TypeSymbol)clss).getDispTable(templates));
-							}
-						}
+		protObjs = templates.getInstanceOf("sequence");
+		methods = templates.getInstanceOf("sequenceSpaced");
+
+		SymbolTable.globals.getSymbols().values().forEach(clss -> {
+			if (clss != TypeSymbol.SELF_TYPE) {
+				var className = clss.getName();
+
+				dispTables.add("e", ((TypeSymbol)clss).getDispTable(templates));
+				classObjs.add("e", templates.getInstanceOf("objTabEntry").add("class", clss));
+				classNames.add("e", "\t.word\tstr_const_" + clss);
+				methods.add("e", ((TypeSymbol)clss).getInitMethod(templates));
+
+				var classNameLen = className.length();
+				if (!ints.containsKey(classNameLen)) {
+					ints.put(
+							classNameLen,
+							templates.getInstanceOf("intConst").add("val", classNameLen)
+					);
+				}
+				strings.put(
+						className,
+						templates.getInstanceOf("stringConst")
+								.add("str", className)
+								.add("len", classNameLen)
+								.add("wordCount", (classNameLen + 1) / 4 + 5)
 				);
+
+				protObjs.add("e", ((TypeSymbol)clss).getProtObj(templates));
+			}
+		});
+
+		constants = templates.getInstanceOf("sequence");
+		ints.values().forEach(ct -> constants.add("e", ct));
+		strings.values().forEach(ct -> constants.add("e", ct));
 	}
 
 	@Override
 	public ST visit(ASTProgramNode programNode) {
+		programNode.getClasses().forEach(this::visit);
+
 		ST program = templates.getInstanceOf("program");
-		program.add("consts", "");
+		program.add("consts", constants);
 		program.add("classNames", classNames);
 		program.add("classObjs", classObjs);
-		program.add("protObjs", "");
+		program.add("protObjs", protObjs);
 		program.add("dispTables", dispTables);
-		program.add("methods", "");
+		program.add("methods", methods);
 
 		return program;
 	}
 
 	@Override
 	public ST visit(ASTClassNode classNode) {
+		classNode.getContent().forEach(content -> {
+			if (content instanceof ASTMethodNode) {
+				var methodST = content.accept(this)
+						.add("class", classNode.getType());
+				methods.add("e", methodST);
+			}
+		});
 		return null;
 	}
 
@@ -71,7 +111,9 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTMethodNode methodNode) {
-		return null;
+		return templates.getInstanceOf("method")
+				.add("name", methodNode.getMethodSymbol())
+				.add("body", methodNode.getBody().accept(this));
 	}
 
 	@Override

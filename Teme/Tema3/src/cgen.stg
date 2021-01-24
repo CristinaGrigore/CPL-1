@@ -7,12 +7,30 @@ program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
     .globl  class_nameTab
     .globl  Int_protObj
     .globl  String_protObj
-    .globl  bool_const0
-    .globl  bool_const1
+    .globl  bool_const_False
+    .globl  bool_const_True
     .globl  Main_protObj
     .globl  _int_tag
     .globl  _string_tag
     .globl  _bool_tag
+
+_int_tag:
+    .word   1
+_string_tag:
+    .word   3
+_bool_tag:
+    .word   2
+
+bool_const_False:
+    .word   4
+    .word   4
+    .word   Bool_dispTab
+    .word   0
+bool_const_True:
+    .word   4
+    .word   4
+    .word   Bool_dispTab
+    .word   1
 <consts>
 
 class_nameTab:
@@ -28,13 +46,13 @@ class_objTab:
 heap_start:
     .word   0
 
-
 .text
     .globl  Int_init
     .globl  String_init
     .globl  Bool_init
     .globl  Main_init
     .globl  Main.main
+
 <methods>
 >>
 
@@ -60,9 +78,17 @@ initMethod(class, parent, attrib) ::= <<
 	jr      $ra
 >>
 
-protObj(class) ::= <<
+objTabEntry(class) ::= <<
 	.word   <class>_protObj
 	.word   <class>_init
+>>
+
+protObj(class, tag, words, attrib) ::= <<
+<class>_protObj:
+    .word   <tag>
+    .word   <words>
+    .word   <class>_dispTab
+<attrib>
 >>
 
 dispTableEntry(method) ::= <<
@@ -72,4 +98,39 @@ dispTableEntry(method) ::= <<
 dispatchTable(class, methods) ::= <<
 <class>_dispTab:
 <methods>
+>>
+
+intConst(val) ::= <<
+int_const_<val>:
+	.word   2
+	.word   4
+	.word   Int_dispTab
+	.word   <val>
+>>
+
+stringConst(str, len, wordCount) ::= <<
+str_const_<str>:
+	.word	3
+	.word	<wordCount>
+	.word	String_dispTab
+	.word	int_const_<len>
+	.asciiz	"<str>"
+	.align	2
+>>
+
+method(class, name, body) ::= <<
+<class>.<name>:
+	addiu   $sp $sp -12
+	sw      $fp 12($sp)
+	sw      $s0 8($sp)
+	sw      $ra 4($sp)
+	addiu   $fp $sp 4
+	move    $s0 $a0
+<body>
+	move    $a0 $s0
+	lw      $fp 12($sp)
+	lw      $s0 8($sp)
+	lw      $ra 4($sp)
+	addiu   $sp $sp 12
+	jr      $ra
 >>

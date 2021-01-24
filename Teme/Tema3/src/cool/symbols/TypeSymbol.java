@@ -40,10 +40,6 @@ public class TypeSymbol extends Symbol implements Scope {
 		attributes.put(self.getName(), self);
 	}
 
-	public int getTag() {
-		return tag;
-	}
-
 	private List<String> getDispTabMethods() {
 		var className = getName();
 		var currentMethods = methods.keySet();
@@ -84,6 +80,40 @@ public class TypeSymbol extends Symbol implements Scope {
 		return templates.getInstanceOf("dispatchTable")
 				.add("class", getName())
 				.add("methods", dispTable);
+	}
+
+	public ST getProtObj(STGroupFile templates) {
+		int words;
+		String attrib;
+
+		if (this == TypeSymbol.STRING) {
+			words = 5;
+			attrib = "\t.word\tint_const_0\n\t.asciiz \"\"";
+		} else if (this == TypeSymbol.BOOL || this == TypeSymbol.INT) {
+			words = 4;
+			attrib = "\t.word\t0";
+		} else {
+			words = 3 + attributes.size();
+			// TODO: pune attrib cu tot cu parinti
+			attrib = "";
+		}
+
+		return templates.getInstanceOf("protObj")
+				.add("class", this)
+				.add("tag", tag)
+				.add("words", words)
+				.add("attrib", attrib);
+	}
+
+	public ST getAttribInitST(STGroupFile templates) {
+		return null;
+	}
+
+	public ST getInitMethod(STGroupFile templates) {
+		return templates.getInstanceOf("initMethod")
+				.add("class", this)
+				.add("parent", getParentName())
+				.add("attrib", getAttribInitST(templates));
 	}
 
 	private static boolean isEqSpecial(TypeSymbol ts) {

@@ -106,6 +106,9 @@ public class SymbolTable {
         TypeSymbol.IO.setParent(TypeSymbol.OBJECT);
         TypeSymbol.SELF_TYPE.setParent(TypeSymbol.OBJECT);
 
+        TypeSymbol.INT.add(new IdSymbol("value"));
+        TypeSymbol.BOOL.add(new IdSymbol("value"));
+
         setObjectMethods();
         setIOMethods();
         setStringMethods();
