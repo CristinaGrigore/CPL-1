@@ -19,12 +19,12 @@ public class SymbolTable {
         var abortMethod = new MethodSymbol("abort");
         abortMethod.setParent(TypeSymbol.OBJECT);
         abortMethod.setReturnType(TypeSymbol.OBJECT);
-        abortMethod.setOffset(4);
+        abortMethod.setOffset(0);
 
         var typeNameMethod = new MethodSymbol("type_name");
         typeNameMethod.setParent(TypeSymbol.OBJECT);
         typeNameMethod.setReturnType(TypeSymbol.STRING);
-        typeNameMethod.setOffset(0);
+        typeNameMethod.setOffset(4);
 
         var copyMethod = new MethodSymbol("copy");
         copyMethod.setParent(TypeSymbol.OBJECT);
@@ -40,7 +40,7 @@ public class SymbolTable {
         var outStringMethod = new MethodSymbol("out_string");
         outStringMethod.setParent(TypeSymbol.IO);
         outStringMethod.setReturnType(TypeSymbol.SELF_TYPE);
-        outStringMethod.setOffset(24);
+        outStringMethod.setOffset(12);
         var outStringParam = new IdSymbol("x");
         outStringParam.setType(TypeSymbol.STRING);
         outStringMethod.add(outStringParam);
@@ -48,7 +48,7 @@ public class SymbolTable {
         var outIntMethod = new MethodSymbol("out_int");
         outIntMethod.setParent(TypeSymbol.IO);
         outIntMethod.setReturnType(TypeSymbol.SELF_TYPE);
-        outIntMethod.setOffset(20);
+        outIntMethod.setOffset(16);
         var outIntParam = new IdSymbol("x");
         outIntParam.setType(TypeSymbol.INT);
         outIntMethod.add(outIntParam);
@@ -56,12 +56,12 @@ public class SymbolTable {
         var inStringMethod = new MethodSymbol("in_string");
         inStringMethod.setParent(TypeSymbol.IO);
         inStringMethod.setReturnType(TypeSymbol.STRING);
-        inStringMethod.setOffset(16);
+        inStringMethod.setOffset(20);
 
         var inIntMethod = new MethodSymbol("in_int");
         inIntMethod.setParent(TypeSymbol.IO);
         inIntMethod.setReturnType(TypeSymbol.INT);
-        inIntMethod.setOffset(12);
+        inIntMethod.setOffset(24);
 
         TypeSymbol.IO.addMethod(outStringMethod);
         TypeSymbol.IO.addMethod(outIntMethod);
@@ -73,7 +73,7 @@ public class SymbolTable {
         var concatMethod = new MethodSymbol("concat");
         concatMethod.setParent(TypeSymbol.STRING);
         concatMethod.setReturnType(TypeSymbol.STRING);
-        concatMethod.setOffset(16);
+        concatMethod.setOffset(12);
         var concatParam = new IdSymbol("x");
         concatParam.setType(TypeSymbol.STRING);
         concatMethod.add(concatParam);
@@ -81,7 +81,7 @@ public class SymbolTable {
         var lengthMethod = new MethodSymbol("length");
         lengthMethod.setParent(TypeSymbol.STRING);
         lengthMethod.setReturnType(TypeSymbol.INT);
-        lengthMethod.setOffset(12);
+        lengthMethod.setOffset(16);
 
         var substrMethod = new MethodSymbol("substr");
         substrMethod.setParent(TypeSymbol.STRING);

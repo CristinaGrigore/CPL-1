@@ -5,7 +5,7 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +21,8 @@ public class TypeSymbol extends Symbol implements Scope {
 	// TODO: pune tag conform ierarhiei de clase
 	public static int tagCounter = 0;
 
-	private final HashMap<String, IdSymbol> attributes;
-	private final HashMap<String, MethodSymbol> methods;
+	private final LinkedHashMap<String, IdSymbol> attributes;
+	private final LinkedHashMap<String, MethodSymbol> methods;
 	private TypeSymbol parent;
 	private final String parentName;
 	private final int tag;
@@ -33,8 +33,8 @@ public class TypeSymbol extends Symbol implements Scope {
 		this.parentName = parentName;
 		tag = tagCounter++;
 
-		attributes = new HashMap<>();
-		methods = new HashMap<>();
+		attributes = new LinkedHashMap<>();
+		methods = new LinkedHashMap<>();
 
 		var self = new IdSymbol("self");
 		self.setType(SELF_TYPE);
@@ -50,12 +50,20 @@ public class TypeSymbol extends Symbol implements Scope {
 		return totalMethods;
 	}
 
+	public int getNumAttrib() {
+		int totalAttrib = (attributes.size() - 1) * 4;
+		if (parent != null) {
+			totalAttrib += parent.getNumAttrib();
+		}
+
+		return totalAttrib;
+	}
+
 	private List<String> getDispTabMethods() {
 		var className = getName();
 		var currentMethods = methods.keySet();
 		List<String> dispTabMethods;
 
-		// TODO: salveaza offsetul metodei in MethodSymbol
 		if (parent != null) {
 			var parentMethods = parent.getDispTabMethods();
 			dispTabMethods = parentMethods.stream().map(method -> {
@@ -92,30 +100,59 @@ public class TypeSymbol extends Symbol implements Scope {
 				.add("methods", dispTable);
 	}
 
-	public ST getProtObj(STGroupFile templates) {
-		int words;
-		String attrib;
+	private String getClassAttribST() {
+		if (this == TypeSymbol.INT || this == TypeSymbol.BOOL) {
+			return "\t.word\t0";
+		} else if (this == TypeSymbol.STRING) {
+			return "\t.word\tint_const_0\n\t.asciiz\t\"\"\n\t.align\t2";
+		}
 
-		if (this == TypeSymbol.STRING) {
-			words = 5;
-			attrib = "\t.word\tint_const_0\n\t.asciiz \"\"";
-		} else if (this == TypeSymbol.BOOL || this == TypeSymbol.INT) {
-			words = 4;
-			attrib = "\t.word\t0";
-		} else {
-			words = 3 + attributes.size();
-			// TODO: pune attrib cu tot cu parinti
-			attrib = "";
+		String attrib = "";
+		if (parent != null) {
+			attrib = parent.getClassAttribST();
+		}
+
+		var crtAttrib = attributes
+				.values()
+				.stream()
+				.filter(attr -> !attr.getName().equals("self"))
+				.map(attr -> {
+					var type = attr.getType();
+
+					if (type == TypeSymbol.STRING) {
+						return "\t.word\tstr_const_";
+					} else if (type == TypeSymbol.INT) {
+						return "\t.word\tint_const_0";
+					} else if (type == TypeSymbol.BOOL) {
+						return "\t.word\tbool_const_false";
+					} else {
+						return "\t.word\t0";
+					}
+				}).collect(Collectors.joining("\n"));
+
+		if (!attrib.isEmpty() && !crtAttrib.isEmpty()) {
+			return attrib + "\n" + crtAttrib;
+		}
+		return attrib + crtAttrib;
+	}
+
+	public ST getProtObj(STGroupFile templates) {
+		int words = 3;
+		var type = this;
+
+		while (type != null) {
+			words += type.attributes.size() - 1;
+			type = type.parent;
 		}
 
 		return templates.getInstanceOf("protObj")
 				.add("class", this)
 				.add("tag", tag)
 				.add("words", words)
-				.add("attrib", attrib);
+				.add("attrib", getClassAttribST());
 	}
 
-	public ST getAttribInitST(STGroupFile templates) {
+	private ST getAttribInitST(STGroupFile templates) {
 		return null;
 	}
 

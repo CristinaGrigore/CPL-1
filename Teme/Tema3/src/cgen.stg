@@ -108,8 +108,8 @@ int_const_<val>:
 	.word   <val>
 >>
 
-stringConst(str, len, wordCount) ::= <<
-str_const_<str>:
+stringConst(label, str, len, wordCount) ::= <<
+str_const_<label>:
 	.word	3
 	.word	<wordCount>
 	.word	String_dispTab
@@ -138,9 +138,14 @@ literal(addr) ::= <<
 	la		$a0 <addr>
 >>
 
-// TODO: dispatch explicit + cu @
-dispatch(method, idx, filename, line, offset)  ::= <<
+// TODO: dispatch cu @
+dispatch(method, idx, filename, line, explicit, params, offset)  ::= <<
+<params>
+<if (explicit)>
+<explicit>
+<else>
 	move    $a0 $s0
+<endif>
 	bnez    $a0 dispatch_<method>_<idx>
 	la      $a0 <filename>
 	li      $t1 <line>
@@ -149,4 +154,14 @@ dispatch_<method>_<idx>:
 	lw      $t1 8($a0)
     lw      $t1 <offset>($t1)
     jalr    $t1
+>>
+
+attribute(offset) ::= <<
+	lw      $a0 <offset>($s0)
+>>
+
+dispatchParam(param) ::= <<
+<param>
+	sw      $a0 0($sp)
+	addiu   $sp $sp -4
 >>

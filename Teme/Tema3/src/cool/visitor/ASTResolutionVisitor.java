@@ -11,6 +11,7 @@ import cool.symbols.TypeSymbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -31,9 +32,11 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 		scope = classNode.getType();
 		classNode.getContent().forEach(node -> node.accept(this));
+		var type = classNode.getType();
+		var parent = type.getParent();
 
-		int i = classNode.getType().getTotalNumMethods();
-		// TODO: fa cam la fel pt offseturile atirbutelor (cred)
+		int i = type.getTotalNumMethods();
+		int j = parent != null ? ((TypeSymbol)parent).getNumAttrib() + 12 : 12;
 		for (var node : classNode.getContent()) {
 			if (node instanceof ASTMethodNode) {
 				var methodSymbol = ((ASTMethodNode)node).getMethodSymbol();
@@ -41,6 +44,12 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 					methodSymbol.setOffset(i);
 					i += 4;
 				}
+			} else {
+				var idSymbol = ((ASTAttributeNode)node).getIdSymbol();
+				idSymbol.makeAttribute();
+				idSymbol.setOffset(j);
+
+				j += 4;
 			}
 		}
 

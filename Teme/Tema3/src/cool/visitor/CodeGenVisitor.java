@@ -5,12 +5,14 @@ import cool.compiler.Compiler;
 import cool.parser.CoolParser;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
+import cool.symbols.IdSymbol;
 import cool.symbols.TypeSymbol;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final STGroupFile templates;
@@ -33,7 +35,8 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		if (!strings.containsKey(updated)) {
 			int len = updated.length();
 			ST st = templates.getInstanceOf("stringConst")
-					.add("str", updated)
+					.add("label", updated)
+					.add("str", s)
 					.add("len", addInt(len))
 					.add("wordCount", (len + 1) / 4 + 5);
 
@@ -103,8 +106,7 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		scope = classNode.getType();
 		classNode.getContent().forEach(content -> {
 			if (content instanceof ASTMethodNode) {
-				var methodST = content.accept(this)
-						.add("class", classNode.getType());
+				ST methodST = content.accept(this).add("class", classNode.getType());
 				methods.add("e", methodST);
 			}
 		});
@@ -142,7 +144,15 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTIdNode idNode) {
-		return null;
+		var idName = idNode.getSymbol();
+		var idSymbol = (IdSymbol)scope.lookup(idName);
+
+		if (idSymbol.isAttribute()) {
+			return  templates.getInstanceOf("attribute").add("offset", idSymbol.getOffset());
+		}
+
+		// TODO: adauga formal + let
+		return templates.getInstanceOf("attribute");
 	}
 
 	@Override
@@ -169,10 +179,15 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTDispatchNode dispatchNode) {
-		// TODO: dispatch explicit + cu @
-
 		var method = dispatchNode.getCallee().getText();
+		// TODO: offsetu' e gresit cand e dispatch explicit
 		int offset = ((TypeSymbol)scope.getParent()).lookupMethod(method).getOffset();
+
+		var params = dispatchNode.getParams().stream().map(paramExpr -> {
+			var param = paramExpr.accept(this);
+			return templates.getInstanceOf("dispatchParam")
+					.add("param", param).render();
+		}).collect(Collectors.joining("\n"));
 
 		var ctx = dispatchNode.getContext();
 		while (!(ctx.getParent() instanceof CoolParser.ProgramContext)) {
@@ -180,12 +195,24 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		}
 		var fileName = new File(Compiler.fileNames.get(ctx)).getName();
 
-		return templates.getInstanceOf("dispatch")
+		ST dispatch = templates.getInstanceOf("dispatch")
 				.add("method", method)
 				.add("idx", cnt++)
+				.add("params", params)
 				.add("offset", offset)
 				.add("filename", addString(fileName))
 				.add("line", dispatchNode.getCallee().getLine());
+
+		var exprCaller = dispatchNode.getCaller();
+		var caller = exprCaller != null && !exprCaller.getSymbol().equals("self")
+				? exprCaller.accept(this)
+				: null;
+		if (caller != null) {
+			// TODO: dispatch pe formal, let sau cu @
+			dispatch.add("explicit", caller);
+		}
+
+		return dispatch;
 	}
 
 	@Override
@@ -225,6 +252,9 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTBlockNode blockNode) {
-		return null;
+		ST blockST = templates.getInstanceOf("sequence");
+		blockNode.getExpressions().forEach(expr -> blockST.add("e", expr.accept(this)));
+
+		return blockST;
 	}
 }
