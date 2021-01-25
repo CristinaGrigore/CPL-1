@@ -11,10 +11,7 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CodeGenVisitor implements ASTVisitor<ST> {
@@ -29,29 +26,36 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final ST dispTables;
 	private final ST methods;
 
-	private final HashMap<String, ST> strings;
-	private final HashMap<Integer, ST> ints;
+	private final HashMap<String, Integer> strings;
+	private final HashSet<Integer> ints;
 
 	private String addString(String s) {
-		String updated = s.replace("-", "_");
+		int label;
+		if (!strings.containsKey(s)) {
+			int len = s.length();
 
-		if (!strings.containsKey(updated)) {
-			int len = updated.length();
-			ST st = templates.getInstanceOf("stringConst")
-					.add("label", updated)
+			label = strings.size();
+			strings.put(s, label);
+
+			ST stringST = templates.getInstanceOf("stringConst")
+					.add("label", label)
 					.add("str", s)
 					.add("len", addInt(len))
 					.add("wordCount", (len + 1) / 4 + 5);
-
-			strings.put(updated, st);
+			constants.add("e", stringST);
+		} else {
+			label = strings.get(s);
 		}
 
-		return "str_const_" + updated;
+		return "str_const_" + label;
 	}
 
 	private String addInt(int n) {
-		if (!ints.containsKey(n)) {
-			ints.put(n, templates.getInstanceOf("intConst").add("val", n));
+		if (!ints.contains(n)) {
+			ints.add(n);
+
+			ST intST = templates.getInstanceOf("intConst").add("val", n);
+			constants.add("e", intST);
 		}
 
 		return "int_const_" + n;
@@ -77,11 +81,8 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	public CodeGenVisitor() {
 		templates = new STGroupFile("cgen.stg");
 		strings = new HashMap<>();
-		ints = new HashMap<>();
+		ints = new HashSet<>();
 		cnt = 0;
-
-		addInt(0);
-		addString("");
 
 		constants = templates.getInstanceOf("sequence");
 		classNames = templates.getInstanceOf("sequence");
@@ -89,6 +90,9 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		dispTables = templates.getInstanceOf("sequence");
 		protObjs = templates.getInstanceOf("sequence");
 		methods = templates.getInstanceOf("sequenceSpaced");
+
+		addInt(0);
+		addString("");
 
 		SymbolTable.globals.getSymbols()
 				.values()
@@ -116,9 +120,6 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	@Override
 	public ST visit(ASTProgramNode programNode) {
 		programNode.getClasses().forEach(this::visit);
-
-		ints.values().forEach(ct -> constants.add("e", ct));
-		strings.values().forEach(ct -> constants.add("e", ct));
 
 		ST program = templates.getInstanceOf("program");
 		program.add("consts", constants);
@@ -186,7 +187,7 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 			if (varType == TypeSymbol.INT) {
 				value = "\tla\t\t$a0 int_const_0";
 			} else if (varType == TypeSymbol.STRING) {
-				value = "\tla\t\t$a0 str_const_";
+				value = "\tla\t\t$a0 str_const_0";
 			} else if (varType == TypeSymbol.BOOL) {
 				value = "\tla\t\t$a0 bool_const_false";
 			} else {
@@ -251,7 +252,12 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTNewNode newNode) {
-		return null;
+		var type = newNode.getType().getText();
+		if (type.equals("SELF_TYPE")) {
+			return templates.getInstanceOf("newSelfType");
+		}
+
+		return templates.getInstanceOf("new").add("type", type);
 	}
 
 	@Override
@@ -290,27 +296,75 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 			dispatch.add("explicit", caller);
 		}
 
+		var specificCaller = dispatchNode.getActualCaller();
+		if (specificCaller != null) {
+			dispatch.add("specific", specificCaller.getText());
+		}
+
 		return dispatch;
 	}
 
 	@Override
 	public ST visit(ASTBinaryOperatorNode binaryOpNode) {
-		return null;
+		if (!(binaryOpNode instanceof ASTRelOpNode)) {
+			ST mathST = templates.getInstanceOf("arithm")
+					.add("expr1", binaryOpNode.getLeftOp().accept(this))
+					.add("expr2", binaryOpNode.getRightOp().accept(this));
+
+			if (binaryOpNode instanceof ASTPlusNode) {
+				return mathST.add("op", "add");
+			} else if (binaryOpNode instanceof ASTMinusNode) {
+				return mathST.add("op", "sub");
+			} else if (binaryOpNode instanceof ASTMultNode) {
+				return mathST.add("op", "mul");
+			} else {
+				return mathST.add("op", "div");
+			}
+		} else if (binaryOpNode.getSymbol().equals("=")) {
+			return templates.getInstanceOf("equal")
+					.add("expr1", binaryOpNode.getLeftOp().accept(this))
+					.add("expr2", binaryOpNode.getRightOp().accept(this))
+					.add("cnt", cnt++);
+		} else {
+			return templates.getInstanceOf("cmp")
+					.add("expr1", binaryOpNode.getLeftOp().accept(this))
+					.add("expr2", binaryOpNode.getRightOp().accept(this))
+					.add("op", binaryOpNode.getSymbol().equals("<") ? "blt" : "ble")
+					.add("cnt", cnt++);
+		}
 	}
 
 	@Override
 	public ST visit(ASTUnaryOperatorNode unaryOpNode) {
-		return null;
+		if (unaryOpNode instanceof ASTIsVoidNode) {
+			return templates.getInstanceOf("isvoid")
+					.add("expr", unaryOpNode.getOp().accept(this))
+					.add("cnt", cnt++);
+		} else if (unaryOpNode instanceof ASTNotNode) {
+			return templates.getInstanceOf("not")
+					.add("expr", unaryOpNode.getOp().accept(this))
+					.add("cnt", cnt++);
+		} else {
+			return templates.getInstanceOf("neg")
+					.add("expr", unaryOpNode.getOp().accept(this));
+		}
 	}
 
 	@Override
 	public ST visit(ASTIfNode ifNode) {
-		return null;
+		return templates.getInstanceOf("if")
+				.add("cond", ifNode.getCond().accept(this))
+				.add("then", ifNode.getThenBranch().accept(this))
+				.add("els", ifNode.getElseBranch().accept(this))
+				.add("cnt", cnt++);
 	}
 
 	@Override
 	public ST visit(ASTWhileNode whileNode) {
-		return null;
+		return templates.getInstanceOf("while")
+				.add("cond", whileNode.getCond().accept(this))
+				.add("body", whileNode.getBody().accept(this))
+				.add("cnt", cnt++);
 	}
 
 	@Override

@@ -126,7 +126,7 @@ public class TypeSymbol extends Symbol implements Scope {
 					var type = attr.getType();
 
 					if (type == TypeSymbol.STRING) {
-						return "\t.word\tstr_const_";
+						return "\t.word\tstr_const_0";
 					} else if (type == TypeSymbol.INT) {
 						return "\t.word\tint_const_0";
 					} else if (type == TypeSymbol.BOOL) {
