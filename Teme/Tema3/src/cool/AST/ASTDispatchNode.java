@@ -1,5 +1,6 @@
 package cool.AST;
 
+import cool.symbols.TypeSymbol;
 import cool.visitor.ASTVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -11,6 +12,7 @@ public class ASTDispatchNode extends ASTExpressionNode {
 	private final Token actualCaller;
 	private final Token callee;
 	private final List<ASTExpressionNode> params;
+	private TypeSymbol callerType;
 
 	public ASTDispatchNode(
 			ParserRuleContext context,
@@ -25,6 +27,14 @@ public class ASTDispatchNode extends ASTExpressionNode {
 		this.actualCaller = actualCaller;
 		this.callee = callee;
 		this.params = params;
+	}
+
+	public TypeSymbol getCallerType() {
+		return callerType;
+	}
+
+	public void setCallerType(TypeSymbol callerType) {
+		this.callerType = callerType;
 	}
 
 	public ASTExpressionNode getCaller() {

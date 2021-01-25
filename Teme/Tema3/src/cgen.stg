@@ -16,18 +16,18 @@ program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
 
 _int_tag:
     .word   1
-_string_tag:
-    .word   3
 _bool_tag:
     .word   2
+_string_tag:
+    .word   3
 
 bool_const_false:
-    .word   4
+    .word   2
     .word   4
     .word   Bool_dispTab
     .word   0
 bool_const_true:
-    .word   4
+    .word   2
     .word   4
     .word   Bool_dispTab
     .word   1
@@ -67,9 +67,7 @@ initMethod(class, parent, attrib) ::= <<
 <if (parent)>
 	jal     <parent>_init
 <endif>
-<if (attrib)>
-<attributes>
-<endif>
+<attrib>
 	move    $a0 $s0
 	lw      $fp 12($sp)
 	lw      $s0 8($sp)
@@ -102,7 +100,7 @@ dispatchTable(class, methods) ::= <<
 
 intConst(val) ::= <<
 int_const_<val>:
-	.word   2
+	.word   1
 	.word   4
 	.word   Int_dispTab
 	.word   <val>
@@ -118,7 +116,7 @@ str_const_<label>:
 	.align	2
 >>
 
-method(class, name, body) ::= <<
+method(class, name, body, numPops) ::= <<
 <class>.<name>:
 	addiu   $sp $sp -12
 	sw      $fp 12($sp)
@@ -130,7 +128,7 @@ method(class, name, body) ::= <<
 	lw      $fp 12($sp)
 	lw      $s0 8($sp)
 	lw      $ra 4($sp)
-	addiu   $sp $sp 12
+	addiu   $sp $sp <numPops>
 	jr      $ra
 >>
 
@@ -138,7 +136,6 @@ literal(addr) ::= <<
 	la		$a0 <addr>
 >>
 
-// TODO: dispatch cu @
 dispatch(method, idx, filename, line, explicit, params, offset)  ::= <<
 <params>
 <if (explicit)>
@@ -164,4 +161,22 @@ dispatchParam(param) ::= <<
 <param>
 	sw      $a0 0($sp)
 	addiu   $sp $sp -4
+>>
+
+storeAttrib(val, offset) ::= <<
+<val>
+	sw      $a0 <offset>($s0)
+>>
+
+loadVar(offset) ::= <<
+	lw		$a0 <offset>($fp)
+>>
+
+storeVar(val, offset) ::= <<
+<val>
+	sw		$a0 <offset>($fp)
+>>
+
+initLet(space) ::= <<
+	addiu	$sp $sp <space>
 >>

@@ -135,6 +135,12 @@ public class ASTDefinitionVisitor implements ASTVisitor<Void> {
 		methodNode.getBody().accept(this);
 		scope = scope.getParent();
 
+		int i = 12;
+		for(var formal : methodNode.getParams()) {
+			formal.getIdSymbol().setOffset(i);
+			i += 4;
+		}
+
 		return null;
 	}
 

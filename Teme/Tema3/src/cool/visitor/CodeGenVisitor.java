@@ -11,7 +11,10 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CodeGenVisitor implements ASTVisitor<ST> {
@@ -54,6 +57,23 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		return "int_const_" + n;
 	}
 
+	private ST makeInitMethod(ASTClassNode node) {
+		var type = node.getType();
+		var attribs = node
+				.getContent()
+				.stream()
+				.filter(content -> content instanceof ASTAttributeNode)
+				.map(attrib -> attrib.accept(this))
+				.filter(Objects::nonNull)
+				.map(ST::render)
+				.collect(Collectors.joining("\n"));
+
+		return templates.getInstanceOf("initMethod")
+				.add("class", type)
+				.add("parent", type.getParentName())
+				.add("attrib", attribs);
+	}
+
 	public CodeGenVisitor() {
 		templates = new STGroupFile("cgen.stg");
 		strings = new HashMap<>();
@@ -70,17 +90,27 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		protObjs = templates.getInstanceOf("sequence");
 		methods = templates.getInstanceOf("sequenceSpaced");
 
-		SymbolTable.globals.getSymbols().values().forEach(clss -> {
-			if (clss != TypeSymbol.SELF_TYPE) {
-				var className = clss.getName();
-				dispTables.add("e", ((TypeSymbol)clss).getDispTable(templates));
-				classObjs.add("e", templates.getInstanceOf("objTabEntry").add("class", clss));
-				classNames.add("e", "\t.word\t" + addString(className));
-				methods.add("e", ((TypeSymbol)clss).getInitMethod(templates));
-				protObjs.add("e", ((TypeSymbol)clss).getProtObj(templates));
-				addInt(className.length());
-			}
-		});
+		SymbolTable.globals.getSymbols()
+				.values()
+				.stream()
+				.sorted(Comparator.comparingInt(ts -> ((TypeSymbol)ts).getTag()))
+				.forEach(clss -> {
+					if (clss != TypeSymbol.SELF_TYPE) {
+						var className = clss.getName();
+						dispTables.add("e", ((TypeSymbol)clss).getDispTable(templates));
+						classObjs.add("e", templates.getInstanceOf("objTabEntry")
+								.add("class", clss));
+						classNames.add("e", "\t.word\t" + addString(className));
+						protObjs.add("e", ((TypeSymbol)clss).getProtObj(templates));
+						addInt(className.length());
+					}
+				});
+
+		methods.add("e", TypeSymbol.OBJECT.getInitMethod(templates));
+		methods.add("e", TypeSymbol.INT.getInitMethod(templates));
+		methods.add("e", TypeSymbol.BOOL.getInitMethod(templates));
+		methods.add("e", TypeSymbol.STRING.getInitMethod(templates));
+		methods.add("e", TypeSymbol.IO.getInitMethod(templates));
 	}
 
 	@Override
@@ -104,6 +134,9 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	@Override
 	public ST visit(ASTClassNode classNode) {
 		scope = classNode.getType();
+
+		methods.add("e", makeInitMethod(classNode));
+
 		classNode.getContent().forEach(content -> {
 			if (content instanceof ASTMethodNode) {
 				ST methodST = content.accept(this).add("class", classNode.getType());
@@ -121,19 +154,51 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	@Override
 	public ST visit(ASTMethodNode methodNode) {
 		scope = methodNode.getMethodSymbol();
-		return templates.getInstanceOf("method")
+		var methodST = templates.getInstanceOf("method")
 				.add("name", methodNode.getMethodSymbol())
-				.add("body", methodNode.getBody().accept(this));
+				.add("body", methodNode.getBody().accept(this))
+				.add("numPops", methodNode.getParams().size() * 4 + 12);
+		scope = scope.getParent();
+
+		return methodST;
 	}
 
 	@Override
 	public ST visit(ASTAttributeNode attributeNode) {
-		return null;
+		var expr = attributeNode.getValue();
+		if (expr == null) {
+			return null;
+		}
+
+		return templates.getInstanceOf("storeAttrib")
+				.add("val", expr.accept(this))
+				.add("offset", attributeNode.getIdSymbol().getOffset());
 	}
 
 	@Override
 	public ST visit(ASTLocalVarNode localVarNode) {
-		return null;
+		var valueExpr= localVarNode.getValue();
+		var varSymbol = localVarNode.getIdSymbol();
+		var varType = varSymbol.getType();
+
+		String value;
+		if (valueExpr == null) {
+			if (varType == TypeSymbol.INT) {
+				value = "\tla\t\t$a0 int_const_0";
+			} else if (varType == TypeSymbol.STRING) {
+				value = "\tla\t\t$a0 str_const_";
+			} else if (varType == TypeSymbol.BOOL) {
+				value = "\tla\t\t$a0 bool_const_false";
+			} else {
+				value = "\tli\t\t$a0 0";
+			}
+		} else {
+			value = valueExpr.accept(this).render();
+		}
+
+		return templates.getInstanceOf("storeVar")
+				.add("val", value)
+				.add("offset", varSymbol.getOffset());
 	}
 
 	@Override
@@ -146,13 +211,15 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	public ST visit(ASTIdNode idNode) {
 		var idName = idNode.getSymbol();
 		var idSymbol = (IdSymbol)scope.lookup(idName);
+		ST idST;
 
 		if (idSymbol.isAttribute()) {
-			return  templates.getInstanceOf("attribute").add("offset", idSymbol.getOffset());
+			idST = templates.getInstanceOf("attribute");
+		} else {
+			idST = templates.getInstanceOf("loadVar");
 		}
 
-		// TODO: adauga formal + let
-		return templates.getInstanceOf("attribute");
+		return idST.add("offset", idSymbol.getOffset());
 	}
 
 	@Override
@@ -169,7 +236,17 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTAssignNode assignNode) {
-		return null;
+		ST value = assignNode.getValue().accept(this);
+		var idSymbol = (IdSymbol)scope.lookup(assignNode.getId().getText());
+		ST assignST;
+
+		if (idSymbol.isAttribute()) {
+			assignST = templates.getInstanceOf("storeAttrib");
+		} else {
+			assignST = templates.getInstanceOf("storeVar");
+		}
+
+		return assignST.add("val", value).add("offset", idSymbol.getOffset());
 	}
 
 	@Override
@@ -180,10 +257,12 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	@Override
 	public ST visit(ASTDispatchNode dispatchNode) {
 		var method = dispatchNode.getCallee().getText();
-		// TODO: offsetu' e gresit cand e dispatch explicit
-		int offset = ((TypeSymbol)scope.getParent()).lookupMethod(method).getOffset();
+		int offset = dispatchNode.getCallerType().lookupMethod(method).getOffset();
 
-		var params = dispatchNode.getParams().stream().map(paramExpr -> {
+		var reversedParams = dispatchNode.getParams();
+		Collections.reverse(reversedParams);
+
+		var params = reversedParams.stream().map(paramExpr -> {
 			var param = paramExpr.accept(this);
 			return templates.getInstanceOf("dispatchParam")
 					.add("param", param).render();
@@ -208,7 +287,6 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 				? exprCaller.accept(this)
 				: null;
 		if (caller != null) {
-			// TODO: dispatch pe formal, let sau cu @
 			dispatch.add("explicit", caller);
 		}
 
@@ -237,7 +315,26 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTLetNode letNode) {
-		return null;
+		ST initST = templates.getInstanceOf("initLet")
+				.add("space", letNode.getLocals().size() * -4);
+		ST letST = templates.getInstanceOf("sequence").add("e", initST);
+		int i = -4;
+
+		scope = letNode.getLetSymbol();
+		for (var local : letNode.getLocals()) {
+			local.getIdSymbol().setOffset(i);
+			letST.add("e", visit(local));
+			i -= 4;
+		}
+
+		letST.add("e", letNode.getBody().accept(this));
+		scope = scope.getParent();
+
+		ST finST = templates.getInstanceOf("initLet")
+				.add("space", letNode.getLocals().size() * 4);
+		letST.add("e", finST);
+
+		return letST;
 	}
 
 	@Override

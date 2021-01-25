@@ -26,7 +26,6 @@ public class TypeSymbol extends Symbol implements Scope {
 	private TypeSymbol parent;
 	private final String parentName;
 	private final int tag;
-	private int numMethods;
 
 	public TypeSymbol(String name, String parentName) {
 		super(name);
@@ -41,13 +40,20 @@ public class TypeSymbol extends Symbol implements Scope {
 		attributes.put(self.getName(), self);
 	}
 
+	public int getTag() {
+		return tag;
+	}
+
 	public int getTotalNumMethods() {
-		int totalMethods = numMethods;
-		if (parent != null) {
-			totalMethods += parent.getTotalNumMethods();
+		TypeSymbol par = parent;
+		HashSet<String> allMethods = new HashSet<>();
+
+		while (par != null) {
+			allMethods.addAll(par.methods.values().stream().map(MethodSymbol::getName).collect(Collectors.toList()));
+			par = par.parent;
 		}
 
-		return totalMethods;
+		return allMethods.size();
 	}
 
 	public int getNumAttrib() {
@@ -152,15 +158,10 @@ public class TypeSymbol extends Symbol implements Scope {
 				.add("attrib", getClassAttribST());
 	}
 
-	private ST getAttribInitST(STGroupFile templates) {
-		return null;
-	}
-
 	public ST getInitMethod(STGroupFile templates) {
 		return templates.getInstanceOf("initMethod")
 				.add("class", this)
-				.add("parent", getParentName())
-				.add("attrib", getAttribInitST(templates));
+				.add("parent", getParentName());
 	}
 
 	private static boolean isEqSpecial(TypeSymbol ts) {
@@ -251,10 +252,6 @@ public class TypeSymbol extends Symbol implements Scope {
 		}
 
 		methods.put(symbolName, symbol);
-
-		if (parent != null && parent.lookupMethod(symbolName) == null) {
-			++numMethods;
-		}
 
 		return true;
 	}

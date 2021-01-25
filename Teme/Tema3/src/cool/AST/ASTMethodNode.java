@@ -12,7 +12,7 @@ public class ASTMethodNode extends ASTClassContentNode {
 	private final Token retType;
 	private final List<ASTFormalNode> params;
 	private final ASTExpressionNode body;
-	MethodSymbol methodSymbol;
+	private MethodSymbol methodSymbol;
 
 	public ASTMethodNode(
 			ParserRuleContext context,

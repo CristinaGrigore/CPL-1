@@ -35,7 +35,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var type = classNode.getType();
 		var parent = type.getParent();
 
-		int i = type.getTotalNumMethods();
+		int i = type.getTotalNumMethods() * 4;
 		int j = parent != null ? ((TypeSymbol)parent).getNumAttrib() + 12 : 12;
 		for (var node : classNode.getContent()) {
 			if (node instanceof ASTMethodNode) {
@@ -48,7 +48,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 				var idSymbol = ((ASTAttributeNode)node).getIdSymbol();
 				idSymbol.makeAttribute();
 				idSymbol.setOffset(j);
-
 				j += 4;
 			}
 		}
@@ -334,6 +333,8 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 			callerType = actualType;
 		}
+		// TODO: poate e gresit callerType si trebuie actualCallerType?
+		dispatchNode.setCallerType(callerType);
 
 		var methodName = dispatchNode.getCallee().getText();
 		var methodSymb = callerType.lookupMethod(methodName);

@@ -5,12 +5,11 @@ public class IdSymbol extends Symbol {
 	private int offset;
 	private int defType;
 
-	private final int ATTRIBUTE = 0;
-	private final int FORMAL = 0;
-	private final int LET = 0;
+	private final int ATTRIBUTE = 1;
 
 	public IdSymbol(String name) {
 		super(name);
+		defType = 0;
 	}
 
 	public int getOffset() {
@@ -25,24 +24,8 @@ public class IdSymbol extends Symbol {
 		this.defType = ATTRIBUTE;
 	}
 
-	public void makeFormal() {
-		this.defType = FORMAL;
-	}
-
-	public void makeLet() {
-		this.defType = LET;
-	}
-
-	public boolean isFormal() {
-		return defType == FORMAL;
-	}
-
 	public boolean isAttribute() {
 		return defType == ATTRIBUTE;
-	}
-
-	public boolean isLet() {
-		return defType == LET;
 	}
 
 	public TypeSymbol getType() {
