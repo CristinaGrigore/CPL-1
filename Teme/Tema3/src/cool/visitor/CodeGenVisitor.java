@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 public class CodeGenVisitor implements ASTVisitor<ST> {
 	private final STGroupFile templates;
 	private long cnt;
+	private long nextIdx;
+	private long caseCnt;
 	Scope scope;
 
 	private final ST constants;
@@ -39,6 +41,7 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 			ST stringST = templates.getInstanceOf("stringConst")
 					.add("label", label)
+					.add("tag", TypeSymbol.STRING.getTag())
 					.add("str", s)
 					.add("len", addInt(len))
 					.add("wordCount", (len + 1) / 4 + 5);
@@ -54,7 +57,9 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 		if (!ints.contains(n)) {
 			ints.add(n);
 
-			ST intST = templates.getInstanceOf("intConst").add("val", n);
+			ST intST = templates.getInstanceOf("intConst")
+					.add("tag", TypeSymbol.INT.getTag())
+					.add("val", n);
 			constants.add("e", intST);
 		}
 
@@ -110,26 +115,40 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 					}
 				});
 
-		methods.add("e", TypeSymbol.OBJECT.getInitMethod(templates));
-		methods.add("e", TypeSymbol.INT.getInitMethod(templates));
-		methods.add("e", TypeSymbol.BOOL.getInitMethod(templates));
-		methods.add("e", TypeSymbol.STRING.getInitMethod(templates));
-		methods.add("e", TypeSymbol.IO.getInitMethod(templates));
+		methods.add("e", TypeSymbol.OBJECT.getInitMethod(templates))
+				.add("e", TypeSymbol.INT.getInitMethod(templates))
+				.add("e", TypeSymbol.BOOL.getInitMethod(templates))
+				.add("e", TypeSymbol.STRING.getInitMethod(templates))
+				.add("e", TypeSymbol.IO.getInitMethod(templates));
 	}
 
 	@Override
 	public ST visit(ASTProgramNode programNode) {
 		programNode.getClasses().forEach(this::visit);
 
-		ST program = templates.getInstanceOf("program");
-		program.add("consts", constants);
-		program.add("classNames", classNames);
-		program.add("classObjs", classObjs);
-		program.add("protObjs", protObjs);
-		program.add("dispTables", dispTables);
-		program.add("methods", methods);
+		ST intTag = templates.getInstanceOf("basicTag")
+				.add("name", "int")
+				.add("tag", TypeSymbol.INT.getTag());
+		ST boolTag = templates.getInstanceOf("basicTag")
+				.add("name", "bool")
+				.add("tag", TypeSymbol.BOOL.getTag());
+		ST stringTag = templates.getInstanceOf("basicTag")
+				.add("name", "string")
+				.add("tag", TypeSymbol.STRING.getTag());
+		ST basicTags = templates.getInstanceOf("sequence")
+				.add("e", intTag)
+				.add("e", boolTag)
+				.add("e", stringTag);
 
-		return program;
+		return templates.getInstanceOf("program")
+				.add("basicTags", basicTags)
+				.add("boolTag", TypeSymbol.BOOL.getTag())
+				.add("consts", constants)
+				.add("classNames", classNames)
+				.add("classObjs", classObjs)
+				.add("protObjs", protObjs)
+				.add("dispTables", dispTables)
+				.add("methods", methods);
 	}
 
 	@Override
@@ -211,6 +230,10 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 	@Override
 	public ST visit(ASTIdNode idNode) {
 		var idName = idNode.getSymbol();
+		if (idName.equals("self")) {
+			return templates.getInstanceOf("self");
+		}
+
 		var idSymbol = (IdSymbol)scope.lookup(idName);
 		ST idST;
 
@@ -274,18 +297,12 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 					.add("param", param).render();
 		}).collect(Collectors.joining("\n"));
 
-		var ctx = dispatchNode.getContext();
-		while (!(ctx.getParent() instanceof CoolParser.ProgramContext)) {
-			ctx = ctx.getParent();
-		}
-		var fileName = new File(Compiler.fileNames.get(ctx)).getName();
-
 		ST dispatch = templates.getInstanceOf("dispatch")
 				.add("method", method)
 				.add("idx", cnt++)
 				.add("params", params)
 				.add("offset", offset)
-				.add("filename", addString(fileName))
+				.add("filename", getFileName(dispatchNode))
 				.add("line", dispatchNode.getCallee().getLine());
 
 		var exprCaller = dispatchNode.getCaller();
@@ -393,12 +410,43 @@ public class CodeGenVisitor implements ASTVisitor<ST> {
 
 	@Override
 	public ST visit(ASTCaseBranchNode caseBranchNode) {
-		return null;
+		scope = caseBranchNode.getScope();
+		var type = caseBranchNode.getTypeSymbol();
+		ST brST = templates.getInstanceOf("caseBranch")
+				.add("expr", caseBranchNode.getBody().accept(this))
+				.add("lo", type.getTag())
+				.add("hi", type.getMaxTag())
+				.add("cnt", caseCnt)
+				.add("nextIdx", nextIdx++);
+		scope = scope.getParent();
+
+		return brST;
 	}
 
 	@Override
 	public ST visit(ASTCaseNode caseNode) {
-		return null;
+		var branches = caseNode.getBranches();
+		branches.sort(Comparator.comparingInt(br -> -br.getTypeSymbol().getTag()));
+		var branchesCode = branches.stream()
+				.map(this::visit)
+				.map(ST::render)
+				.collect(Collectors.joining("\n"));
+
+		return templates.getInstanceOf("case")
+				.add("expr", caseNode.getVar().accept(this))
+				.add("branches", branchesCode)
+				.add("cnt", caseCnt++)
+				.add("filename", getFileName(caseNode))
+				.add("line", caseNode.getToken().getLine());
+	}
+
+	private String getFileName(ASTNode node) {
+		var ctx = node.getContext();
+		while (!(ctx.getParent() instanceof CoolParser.ProgramContext)) {
+			ctx = ctx.getParent();
+		}
+
+		return addString(new File(Compiler.fileNames.get(ctx)).getName());
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package cool.compiler;
 
+import cool.symbols.TypeSymbol;
 import cool.visitor.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -134,7 +135,10 @@ public class Compiler {
 
         if (SymbolTable.hasSemanticErrors()) {
             System.err.println("Compilation halted");
+            return;
         }
+
+        TypeSymbol.OBJECT.setTags();
 
         var codeGen = new CodeGenVisitor();
         System.out.println(ast.accept(codeGen).render());

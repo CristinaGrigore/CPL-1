@@ -222,7 +222,7 @@ public class ASTConstructionVisitor extends CoolParserBaseVisitor<ASTNode> {
 				.map(node -> (ASTCaseBranchNode)visit(node))
 				.collect(Collectors.toList());
 
-		return new ASTCaseNode(ctx, (ASTExpressionNode)visit(ctx.var), branchesList);
+		return new ASTCaseNode(ctx, ctx.start, (ASTExpressionNode)visit(ctx.var), branchesList);
 	}
 
 	@Override

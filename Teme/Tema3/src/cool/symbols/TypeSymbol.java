@@ -4,10 +4,7 @@ import cool.scopes.Scope;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TypeSymbol extends Symbol implements Scope {
@@ -18,30 +15,56 @@ public class TypeSymbol extends Symbol implements Scope {
 	public static final TypeSymbol IO = new TypeSymbol("IO", "Object");
 	public static final TypeSymbol SELF_TYPE = new TypeSymbol("SELF_TYPE", "Object");
 
-	// TODO: pune tag conform ierarhiei de clase
-	public static int tagCounter = 0;
+	public static int tagCounter;
 
 	private final LinkedHashMap<String, IdSymbol> attributes;
 	private final LinkedHashMap<String, MethodSymbol> methods;
+	private final HashSet<TypeSymbol> children;
 	private TypeSymbol parent;
 	private final String parentName;
-	private final int tag;
+	private int tag;
+	private int maxTag;
 
 	public TypeSymbol(String name, String parentName) {
 		super(name);
 		this.parentName = parentName;
-		tag = tagCounter++;
 
 		attributes = new LinkedHashMap<>();
 		methods = new LinkedHashMap<>();
+		children = new HashSet<>();
 
 		var self = new IdSymbol("self");
 		self.setType(SELF_TYPE);
 		attributes.put(self.getName(), self);
 	}
 
+	public int setTags() {
+		tag = tagCounter;
+		maxTag = tagCounter;
+
+		for (var child : children) {
+			if (child != SELF_TYPE) {
+				++tagCounter;
+				int childTag = child.setTags();
+				if (maxTag < childTag) {
+					maxTag = childTag;
+				}
+			}
+		}
+
+		return maxTag;
+	}
+
+	public void abortChildren() {
+		children.clear();
+	}
+
 	public int getTag() {
 		return tag;
+	}
+
+	public int getMaxTag() {
+		return maxTag;
 	}
 
 	public int getTotalNumMethods() {
@@ -208,6 +231,9 @@ public class TypeSymbol extends Symbol implements Scope {
 	}
 
 	public void setParent(TypeSymbol parent) {
+		if (this != SELF_TYPE) {
+			parent.children.add(this);
+		}
 		this.parent = parent;
 	}
 

@@ -6,12 +6,10 @@ import cool.scopes.CaseScope;
 import cool.scopes.Scope;
 import cool.scopes.SymbolTable;
 import cool.symbols.IdSymbol;
-import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
-import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -534,11 +532,15 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 			);
 			return null;
 		}
+		caseBranchNode.setTypeSymbol(caseType);
 
 		var caseScope = new CaseScope(scope);
 		var id = new IdSymbol(caseBranchNode.getId().getText());
 		id.setType(caseType);
 		caseScope.add(id);
+
+		id.setOffset(-4);
+		caseBranchNode.setScope(caseScope);
 
 		scope = caseScope;
 		var retType = caseBranchNode.getBody().accept(this);

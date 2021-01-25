@@ -1,7 +1,12 @@
 sequence(e) ::= "<e; separator=\"\n\">"
 sequenceSpaced(e) ::= "<e; separator=\"\n\n\">"
 
-program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
+basicTag(name, tag) ::= <<
+_<name>_tag:
+	.word	<tag>
+>>
+
+program(basicTags, boolTag, consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
 .data
     .align  2
     .globl  class_nameTab
@@ -14,20 +19,15 @@ program(consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
     .globl  _string_tag
     .globl  _bool_tag
 
-_int_tag:
-    .word   1
-_bool_tag:
-    .word   2
-_string_tag:
-    .word   3
+<basicTags>
 
 bool_const_false:
-    .word   2
+    .word   <boolTag>
     .word   4
     .word   Bool_dispTab
     .word   0
 bool_const_true:
-    .word   2
+    .word   <boolTag>
     .word   4
     .word   Bool_dispTab
     .word   1
@@ -98,17 +98,17 @@ dispatchTable(class, methods) ::= <<
 <methods>
 >>
 
-intConst(val) ::= <<
+intConst(val, tag) ::= <<
 int_const_<val>:
-	.word   1
+	.word   <tag>
 	.word   4
 	.word   Int_dispTab
 	.word   <val>
 >>
 
-stringConst(label, str, len, wordCount) ::= <<
+stringConst(label, tag, str, len, wordCount) ::= <<
 str_const_<label>:
-	.word	3
+	.word	<tag>
 	.word	<wordCount>
 	.word	String_dispTab
 	.word	<len>
@@ -295,4 +295,34 @@ while_<cnt>:
 	b		while_<cnt>
 end_while_<cnt>:
 	li		$a0 0
+>>
+
+case(expr, branches, filename, line, cnt) ::= <<
+	addiu	$sp $sp -4
+	move	$s0 $a0
+<expr>
+	bnez    $a0 case_<cnt>
+	la      $a0 <filename>
+	li      $t1 <line>
+	jal     _case_abort2
+case_<cnt>:
+	sw		$a0 -4($fp)
+	lw		$t1 0($a0)
+<branches>
+	lw		$a0 -4($fp)
+	jal		_case_abort
+end_case_<cnt>:
+	addiu	$sp $sp 4
+>>
+
+caseBranch(expr, lo, hi, cnt, nextIdx) ::= <<
+	blt		$t1 <lo> case_branch_<nextIdx>
+	bgt     $t1 <hi> case_branch_<nextIdx>
+<expr>
+	b		end_case_<cnt>
+case_branch_<nextIdx>:
+>>
+
+self() ::= <<
+	move	$a0 $s0
 >>

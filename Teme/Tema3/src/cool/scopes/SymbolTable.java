@@ -110,12 +110,14 @@ public class SymbolTable {
         globals.add(TypeSymbol.IO);
         globals.add(TypeSymbol.SELF_TYPE);
 
+        TypeSymbol.OBJECT.abortChildren();
+        TypeSymbol.tagCounter = 0;
+
         TypeSymbol.INT.setParent(TypeSymbol.OBJECT);
         TypeSymbol.STRING.setParent(TypeSymbol.OBJECT);
         TypeSymbol.BOOL.setParent(TypeSymbol.OBJECT);
         TypeSymbol.IO.setParent(TypeSymbol.OBJECT);
         TypeSymbol.SELF_TYPE.setParent(TypeSymbol.OBJECT);
-        TypeSymbol.tagCounter = 5;
 
         TypeSymbol.INT.add(new IdSymbol("value"));
         TypeSymbol.BOOL.add(new IdSymbol("value"));
