@@ -331,7 +331,6 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 
 			callerType = actualType;
 		}
-		// TODO: poate e gresit callerType si trebuie actualCallerType?
 		dispatchNode.setCallerType(callerType);
 
 		var methodName = dispatchNode.getCallee().getText();
@@ -492,6 +491,8 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 					"While condition has type " + condType + " instead of Bool"
 			);
 		}
+
+		whileNode.getBody().accept(this);
 
 		return TypeSymbol.OBJECT;
 	}
