@@ -85,3 +85,9 @@ de input.
 ### Tema 2 - Analiza semantica
 Se continua implementarea parserului de la Tema1 pentru a verifica si daca
 tipurile de date folosite in program respecta specificatiile limbajului.
+
+### Tema 3 - Generare de cod
+Ultima faza a dezvoltarii compilatorului inceput la tema 1, in aceasta etapa se
+genereaza codul Assembly (MIPS) echivalent cu codul COOL primit ca intrare.
+Secventele de cod sunt gnerate ca in laboratoarele 8 si 9, folosind
+`StringTemplate`.
