@@ -33,7 +33,7 @@ public class ASTResolutionVisitor implements ASTVisitor<TypeSymbol> {
 		var type = classNode.getType();
 		var parent = type.getParent();
 
-		int i = type.getTotalNumMethods() * 4;
+		int i = type.getParentNumMethods() * 4;
 		int j = parent != null ? ((TypeSymbol)parent).getNumAttrib() + 12 : 12;
 		for (var node : classNode.getContent()) {
 			if (node instanceof ASTMethodNode) {

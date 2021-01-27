@@ -8,29 +8,29 @@ _<name>_tag:
 
 program(basicTags, boolTag, consts, classNames, classObjs, protObjs, dispTables, methods) ::= <<
 .data
-    .align  2
-    .globl  class_nameTab
-    .globl  Int_protObj
-    .globl  String_protObj
-    .globl  bool_const_false
-    .globl  bool_const_true
-    .globl  Main_protObj
-    .globl  _int_tag
-    .globl  _string_tag
-    .globl  _bool_tag
+    .align	2
+    .globl	class_nameTab
+    .globl	Int_protObj
+    .globl	String_protObj
+    .globl	bool_const_false
+    .globl	bool_const_true
+    .globl	Main_protObj
+    .globl	_int_tag
+    .globl	_string_tag
+    .globl	_bool_tag
 
 <basicTags>
 
 bool_const_false:
-    .word   <boolTag>
-    .word   4
-    .word   Bool_dispTab
-    .word   0
+    .word	<boolTag>
+    .word	4
+    .word	Bool_dispTab
+    .word	0
 bool_const_true:
-    .word   <boolTag>
-    .word   4
-    .word   Bool_dispTab
-    .word   1
+    .word	<boolTag>
+    .word	4
+    .word	Bool_dispTab
+    .word	1
 <consts>
 
 class_nameTab:
@@ -44,53 +44,53 @@ class_objTab:
 <dispTables>
 
 heap_start:
-    .word   0
+    .word	0
 
 .text
-    .globl  Int_init
-    .globl  String_init
-    .globl  Bool_init
-    .globl  Main_init
-    .globl  Main.main
+    .globl	Int_init
+    .globl	String_init
+    .globl	Bool_init
+    .globl	Main_init
+    .globl	Main.main
 
 <methods>
 >>
 
 initMethod(class, parent, attrib) ::= <<
 <class>_init:
-	addiu   $sp $sp -12
-	sw      $fp 12($sp)
-	sw      $s0 8($sp)
-	sw      $ra 4($sp)
-	addiu   $fp $sp 4
-	move    $s0 $a0
+	addiu	$sp $sp -12
+	sw		$fp 12($sp)
+	sw		$s0 8($sp)
+	sw		$ra 4($sp)
+	addiu	$fp $sp 4
+	move	$s0 $a0
 <if (parent)>
-	jal     <parent>_init
+	jal		<parent>_init
 <endif>
 <attrib>
-	move    $a0 $s0
-	lw      $fp 12($sp)
-	lw      $s0 8($sp)
-	lw      $ra 4($sp)
-	addiu   $sp $sp 12
-	jr      $ra
+	move	$a0 $s0
+	lw		$fp 12($sp)
+	lw		$s0 8($sp)
+	lw		$ra 4($sp)
+	addiu	$sp $sp 12
+	jr		$ra
 >>
 
 objTabEntry(class) ::= <<
-	.word   <class>_protObj
-	.word   <class>_init
+	.word	<class>_protObj
+	.word	<class>_init
 >>
 
 protObj(class, tag, words, attrib) ::= <<
 <class>_protObj:
-    .word   <tag>
-    .word   <words>
-    .word   <class>_dispTab
+    .word	<tag>
+    .word	<words>
+    .word	<class>_dispTab
 <attrib>
 >>
 
 dispTableEntry(method) ::= <<
-	.word   <method>
+	.word	<method>
 >>
 
 dispatchTable(class, methods) ::= <<
@@ -100,10 +100,10 @@ dispatchTable(class, methods) ::= <<
 
 intConst(val, tag) ::= <<
 int_const_<val>:
-	.word   <tag>
-	.word   4
-	.word   Int_dispTab
-	.word   <val>
+	.word	<tag>
+	.word	4
+	.word	Int_dispTab
+	.word	<val>
 >>
 
 stringConst(label, tag, str, len, wordCount) ::= <<
@@ -118,25 +118,25 @@ str_const_<label>:
 
 method(class, name, body, numPops) ::= <<
 <class>.<name>:
-	addiu   $sp $sp -12
-	sw      $fp 12($sp)
-	sw      $s0 8($sp)
-	sw      $ra 4($sp)
-	addiu   $fp $sp 4
-	move    $s0 $a0
+	addiu	$sp $sp -12
+	sw		$fp 12($sp)
+	sw		$s0 8($sp)
+	sw		$ra 4($sp)
+	addiu	$fp $sp 4
+	move	$s0 $a0
 <body>
-	lw      $fp 12($sp)
-	lw      $s0 8($sp)
-	lw      $ra 4($sp)
-	addiu   $sp $sp <numPops>
-	jr      $ra
+	lw		$fp 12($sp)
+	lw		$s0 8($sp)
+	lw		$ra 4($sp)
+	addiu	$sp $sp <numPops>
+	jr		$ra
 >>
 
 literal(addr) ::= <<
 	la		$a0 <addr>
 >>
 
-dispatch(method, idx, filename, line, explicit, specific, params, offset)  ::= <<
+dispatch(method, idx, filename, line, explicit, specific, params, offset) ::= <<
 <params>
 <if (explicit)>
 <explicit>
@@ -219,10 +219,10 @@ endif_<cnt>:
 
 isvoid(expr, cnt) ::= <<
 <expr>
-    move    $t1 $a0
-    la      $a0 bool_const_true
-    beqz    $t1 isvoid_<cnt>
-    la      $a0 bool_const_false
+    move	$t1 $a0
+    la		$a0 bool_const_true
+    beqz	$t1 isvoid_<cnt>
+    la		$a0 bool_const_false
 isvoid_<cnt>:
 >>
 

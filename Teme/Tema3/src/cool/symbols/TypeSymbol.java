@@ -67,16 +67,16 @@ public class TypeSymbol extends Symbol implements Scope {
 		return maxTag;
 	}
 
-	public int getTotalNumMethods() {
+	public int getParentNumMethods() {
 		TypeSymbol par = parent;
-		HashSet<String> allMethods = new HashSet<>();
+		HashSet<String> parentMethods = new HashSet<>();
 
 		while (par != null) {
-			allMethods.addAll(par.methods.values().stream().map(MethodSymbol::getName).collect(Collectors.toList()));
+			parentMethods.addAll(par.methods.values().stream().map(MethodSymbol::getName).collect(Collectors.toList()));
 			par = par.parent;
 		}
 
-		return allMethods.size();
+		return parentMethods.size();
 	}
 
 	public int getNumAttrib() {
